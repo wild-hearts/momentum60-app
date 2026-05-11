@@ -1,0 +1,142 @@
+.landing-container {
+  width: 100%;
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+.landing-hero {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.landing-hero-content {
+  max-width: 900px;
+}
+
+.landing-hero h1 {
+  font-size: 5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+
+.landing-subtitle {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.cta-button {
+  padding: 1.25rem 3rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cta-button.primary {
+  background: #ec4899;
+  color: white;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.cta-button.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.6);
+}
+
+.landing-problem, .landing-rules, .landing-transformation {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.landing-problem h2, .landing-rules h2, .landing-transformation h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+}
+
+.landing-problem p, .landing-transformation p {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.rules-intro {
+  font-size: 1.5rem;
+  color: #ec4899;
+  font-weight: 700;
+  margin-bottom: 4rem;
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.rule-card {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 2.5rem;
+  border-radius: 24px;
+  text-align: left;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s;
+}
+
+.rule-card:hover {
+  transform: translateY(-5px);
+}
+
+.rule-number {
+  font-size: 4rem;
+  font-weight: 900;
+  color: rgba(236, 72, 153, 0.2);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.rule-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.rule-card p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .landing-hero h1 {
+    font-size: 3.5rem;
+  }
+  .landing-subtitle {
+    font-size: 1.25rem;
+  }
+  .landing-problem h2, .landing-rules h2, .landing-transformation h2 {
+    font-size: 2.5rem;
+  }
+}

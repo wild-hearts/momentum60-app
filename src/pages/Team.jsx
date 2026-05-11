@@ -1,0 +1,84 @@
+import React, { useContext, useState } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { Users, Copy, CheckCircle } from 'lucide-react';
+import './Landing.css';
+
+function Team() {
+  const { user, inviteCode, teamMember, linkTeam } = useContext(AuthContext);
+  const [friendCode, setFriendCode] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  if (!user) {
+    return (
+      <div className="landing-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2>You need an account to team up.</h2>
+          <a href="/auth" className="cta-button primary" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>Go to Login</a>
+        </div>
+      </div>
+    );
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(inviteCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleLink = (e) => {
+    e.preventDefault();
+    if (friendCode.length === 6) {
+      linkTeam(friendCode);
+    }
+  };
+
+  return (
+    <div className="landing-container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 2rem', textAlign: 'center' }}>
+        <Users size={64} color="#ec4899" style={{ marginBottom: '1.5rem' }} />
+        <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>Team Up</h1>
+        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '4rem' }}>
+          Accountability is everything. Link your dashboard with a friend and never have a zero day again.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', textAlign: 'left' }}>
+          <div className="rule-card">
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Your Invite Code</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Share this code with your partner.</p>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#ec4899' }}>{inviteCode}</span>
+              <button onClick={handleCopy} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+                {copied ? <CheckCircle color="#10b981" /> : <Copy />}
+              </button>
+            </div>
+          </div>
+
+          <div className="rule-card">
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Link a Friend</h3>
+            {teamMember ? (
+              <div>
+                <p style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem' }}>Successfully linked!</p>
+                <p>You are now teamed up with User <strong>{teamMember}</strong>.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleLink}>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Enter their 6-character code below.</p>
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  value={friendCode}
+                  onChange={(e) => setFriendCode(e.target.value.toUpperCase())}
+                  placeholder="e.g., A1B2C3"
+                  style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.25rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '1rem' }}
+                />
+                <button type="submit" className="cta-button primary" style={{ width: '100%' }}>LINK ACCOUNT</button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Team;

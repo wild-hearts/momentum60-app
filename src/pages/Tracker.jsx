@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { playChime, playClick } from '../utils/audioUtils';
+import Mascot from '../components/Mascot';
 import './Tracker.css';
 
 function Tracker() {
@@ -48,6 +49,10 @@ function Tracker() {
   };
 
   const highestUnlockedDay = getUnlockedDaysCount();
+  
+  // Calculate Mascot state
+  const currentDayData = userData[highestUnlockedDay] || {};
+  const isFed = customRules.some(rule => currentDayData[rule.id]);
   
   let completedCount = 0;
   for (let i = 1; i <= 60; i++) {
@@ -116,6 +121,8 @@ function Tracker() {
           <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: '#ef4444' }} onClick={handleStartOver}>Fail / Start Over</button>
         </div>
       </header>
+
+      <Mascot unlockedDays={highestUnlockedDay} isTodayCompleted={isFed} />
 
       <section className="tracker-instructions" style={{ maxWidth: '1000px', margin: '0 auto 3rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', textAlign: 'left' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#ec4899', fontWeight: '700' }}>Your Daily Non-Negotiables</h2>

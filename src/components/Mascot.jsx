@@ -1,27 +1,50 @@
 import React from 'react';
-import stage1 from '../assets/mascot/stage1.png';
-import stage2 from '../assets/mascot/stage2.png';
-import stage3 from '../assets/mascot/stage3.png';
-import stage4 from '../assets/mascot/stage4.png';
+import stage01 from '../assets/mascot/v2/phoenix_v2_stage01.png';
+import stage02 from '../assets/mascot/v2/phoenix_v2_stage02.png';
+import stage03 from '../assets/mascot/v2/phoenix_v2_stage03.png';
+import stage04 from '../assets/mascot/v2/phoenix_v2_stage04.png';
+import stage05 from '../assets/mascot/v2/phoenix_v2_stage05.png';
+import stage06 from '../assets/mascot/v2/phoenix_v2_stage06.png';
+import stage07 from '../assets/mascot/v2/phoenix_v2_stage07.png';
+import stage08 from '../assets/mascot/v2/phoenix_v2_stage08.png';
+import stage09 from '../assets/mascot/v2/phoenix_v2_stage09.png';
+import stage10 from '../assets/mascot/v2/phoenix_v2_stage10.png';
+import stage11 from '../assets/mascot/v2/phoenix_v2_stage11.png';
+import stage12 from '../assets/mascot/v2/phoenix_v2_stage12.png';
+import stage13 from '../assets/mascot/v2/phoenix_v2_stage13.png';
+import stage14 from '../assets/mascot/v2/phoenix_v2_stage14.png';
+import stage15 from '../assets/mascot/v2/phoenix_v2_stage15.png';
+import stage16 from '../assets/mascot/v2/phoenix_v2_stage16.png';
+import stage17 from '../assets/mascot/v2/phoenix_v2_stage17.png';
+import stage18 from '../assets/mascot/v2/phoenix_v2_stage18.png';
+import stage19 from '../assets/mascot/v2/phoenix_v2_stage19.png';
+import stage20 from '../assets/mascot/v2/phoenix_v2_stage20.png';
+
+const STAGE_IMAGES = [
+  stage01, stage02, stage03, stage04, stage05,
+  stage06, stage07, stage08, stage09, stage10,
+  stage11, stage12, stage13, stage14, stage15,
+  stage16, stage17, stage18, stage19, stage20
+];
+
+const STAGE_NAMES = [
+  "The Spark", "The Ember", "The Kindle", "The Flame", "The Blaze",
+  "Hatching Phoenix", "Neon Chick", "Growing Firebird", "Juvenile Firebird", "First Flight",
+  "Neon Trail", "Glowing Perch", "Extended Wings", "Soaring Light", "Majestic Perch",
+  "Radiant Heat", "Storm Illuminator", "Fierce Gaze", "Dive Bomb", "The Ultimate Phoenix"
+];
 
 function Mascot({ unlockedDays, isTodayCompleted }) {
-  let currentStageImage = stage1;
-  let stageName = "The Ember";
-  let description = "Complete a task to build momentum.";
-
-  if (unlockedDays >= 51) {
-    currentStageImage = stage4;
-    stageName = "The Majestic Phoenix";
-    description = "Unstoppable momentum. Do not break the chain.";
-  } else if (unlockedDays >= 31) {
-    currentStageImage = stage3;
-    stageName = "The Firebird";
-    description = "Your momentum is burning bright.";
-  } else if (unlockedDays >= 11) {
-    currentStageImage = stage2;
-    stageName = "The Glowing Egg";
-    description = "Momentum is building. Keep going.";
-  }
+  // Map unlocked days to a stage.
+  // We want growth every 3 days. So Day 1-3 is Stage 1, Day 4-6 is Stage 2, etc.
+  // At Day 58-60, it will be Stage 20.
+  const stageIndex = Math.min(Math.max(Math.ceil(unlockedDays / 3) - 1, 0), 19);
+  
+  const currentStageImage = STAGE_IMAGES[stageIndex];
+  const stageName = STAGE_NAMES[stageIndex];
+  const description = stageIndex === 19 
+    ? "Maximum Evolution! Do not break the chain." 
+    : "Momentum is building. Keep going.";
 
   return (
     <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: '600px', margin: '0 auto 3rem auto' }}>

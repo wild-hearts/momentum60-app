@@ -24,7 +24,13 @@ function CustomRules() {
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset to the original Momentum 5 rules?")) {
-      setEditingRules(dailyRules);
+      setEditingRules([
+        { id: 'diet', label: 'Stick to my diet', sort_order: 1 },
+        { id: 'workout', label: '45 min workout', sort_order: 2 },
+        { id: 'water', label: 'Drink 3L of water', sort_order: 3 },
+        { id: 'reading', label: 'Read 10 pages', sort_order: 4 },
+        { id: 'photo', label: 'Take progress photo', sort_order: 5 }
+      ]);
     }
   };
 
@@ -41,21 +47,12 @@ function CustomRules() {
           {editingRules.map((rule, index) => (
             <div key={rule.id} className="rule-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #10b981' }}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Rule #{index + 1} Title</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Rule #{index + 1}</label>
                 <input 
                   type="text" 
-                  value={rule.title}
-                  onChange={(e) => handleRuleChange(index, 'title', e.target.value)}
+                  value={rule.label}
+                  onChange={(e) => handleRuleChange(index, 'label', e.target.value)}
                   style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.1rem', fontWeight: 'bold' }}
-                  required
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Description</label>
-                <textarea 
-                  value={rule.description}
-                  onChange={(e) => handleRuleChange(index, 'description', e.target.value)}
-                  style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1rem', minHeight: '80px', fontFamily: 'inherit' }}
                   required
                 />
               </div>

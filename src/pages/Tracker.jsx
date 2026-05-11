@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { AuthContext } from '../context/AuthContext';
@@ -9,31 +9,14 @@ import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { customRules } = useContext(AuthContext);
-  // State structure: { 1: { rule1: true, rule2: false, rule3: true, rule4: false, rule5: false }, 2: { ... } }
-  const [userData, setUserData] = useState({});
+  const { customRules, userData, toggleDayItem, resetProgress } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
-
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('momentum60_data');
-    if (savedProgress) {
-      try {
-        setUserData(JSON.parse(savedProgress));
-      } catch (e) {
-        console.error("Failed to parse", e);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('momentum60_data', JSON.stringify(userData));
-  }, [userData]);
 
   const isDayCompleted = (dayNum) => {
     const dayData = userData[dayNum];
     if (!dayData) return false;
     // The "Smaller Version" rule: at least 1 item must be completed to not be a zero day
-    return customRules.some(rule => dayData[rule.id]);
+    return customRules.some(rule => dayData[rule.id] === true || dayData[rule.id] === 'true'); // Handle supabase booleans/strings
   };
 
   const getUnlockedDaysCount = () => {
@@ -60,11 +43,9 @@ function Tracker() {
   }
   const progressPercentage = (completedCount / 60) * 100;
 
-  const handleStartOver = () => {
-    if (window.confirm("Are you sure you want to start over? All progress will be lost.")) {
-      setUserData({});
-      setSelectedDay(null);
-    }
+  const handleStartOver = async () => {
+    await resetProgress();
+    setSelectedDay(null);
   };
 
   const handleDayClick = (dayNum) => {
@@ -73,40 +54,49 @@ function Tracker() {
     setSelectedDay(dayNum);
   };
 
-  const toggleRule = (ruleId) => {
+  const toggleRule = async (ruleId) => {
     playClick();
-    setUserData(prev => {
-      const dayData = prev[selectedDay] || {};
-      const newDayData = { ...dayData, [ruleId]: !dayData[ruleId] };
-      const newState = { ...prev, [selectedDay]: newDayData };
-      
-      const allDone = customRules.every(r => newDayData[r.id]);
-      const wasDone = customRules.every(r => dayData[r.id]);
-      
-      const anyDone = customRules.some(r => newDayData[r.id]);
-      const wasAnyDone = customRules.some(r => dayData[r.id]);
-
-      if (anyDone && !wasAnyDone) {
-        // Just unlocked the day - small victory
-        playChime();
+    
+    const dayData = userData[selectedDay] || {};
+    const wasDone = customRules.every(r => dayData[r.id]);
+    const wasAnyDone = customRules.some(r => dayData[r.id]);
+    
+    // Call Supabase update function
+    await toggleDayItem(selectedDay, ruleId);
+    
+    // Determine new visual state for confetti
+    const isNowDone = !dayData[ruleId];
+    let currentlyDoneCount = 0;
+    let anyNowDone = false;
+    
+    customRules.forEach(r => {
+      const done = r.id === ruleId ? isNowDone : !!dayData[r.id];
+      if (done) {
+        currentlyDoneCount++;
+        anyNowDone = true;
       }
-      
-      if (allDone && !wasDone) {
-        playChime();
-        if (selectedDay === 60) {
-          var duration = 3000;
-          var end = Date.now() + duration;
-          (function frame() {
-            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
-            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
-            if (Date.now() < end) requestAnimationFrame(frame);
-          }());
-        } else {
-           confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
-        }
-      }
-      return newState;
     });
+    
+    const allNowDone = currentlyDoneCount === customRules.length;
+
+    if (anyNowDone && !wasAnyDone) {
+      playChime();
+    }
+    
+    if (allNowDone && !wasDone) {
+      playChime();
+      if (selectedDay === 60) {
+        var duration = 3000;
+        var end = Date.now() + duration;
+        (function frame() {
+          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
+          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        }());
+      } else {
+         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
+      }
+    }
   };
 
   const daysArray = Array.from({ length: 60 }, (_, i) => i + 1);
@@ -134,8 +124,7 @@ function Tracker() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
           {customRules.map(rule => (
             <div key={rule.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #ec4899' }}>
-              <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{rule.title}</strong>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.4', display: 'block' }}>{rule.description}</span>
+              <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{rule.label}</strong>
             </div>
           ))}
         </div>
@@ -182,7 +171,7 @@ function Tracker() {
                       <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
                         {customRules.map(rule => (
                           <li key={rule.id} style={{ marginBottom: '0.25rem', color: (userData[dayNum] && userData[dayNum][rule.id]) ? '#10b981' : 'inherit' }}>
-                            {rule.title}
+                            {rule.label}
                           </li>
                         ))}
                       </ul>
@@ -245,8 +234,7 @@ function Tracker() {
                       {isRuleDone && '✓'}
                     </div>
                     <div className="rule-check-text">
-                      <strong style={{ display: 'block', marginBottom: '0.25rem', color: isRuleDone ? '#10b981' : 'inherit' }}>{rule.title}</strong>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{rule.description}</p>
+                      <strong style={{ display: 'block', marginBottom: '0.25rem', color: isRuleDone ? '#10b981' : 'inherit' }}>{rule.label}</strong>
                     </div>
                   </div>
                 );

@@ -10,6 +10,7 @@ import Team from './pages/Team';
 import Insights from './pages/Insights';
 import CustomRules from './pages/CustomRules';
 import JourneySummary from './pages/JourneySummary';
+import Settings from './pages/Settings';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="/rules" element={<ProtectedRoute><CustomRules /></ProtectedRoute>} />
         <Route path="/summary" element={<ProtectedRoute><JourneySummary /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       </Routes>
     </Router>
   );

@@ -212,9 +212,10 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
     try {
       const inviteCode = generateInviteCode();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode })
+        .insert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode, timezone })
         .select()
         .single();
         
@@ -223,6 +224,24 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error starting challenge:', error);
       alert('Failed to start challenge. Please try again.');
+    }
+  };
+
+  const updateProfileSettings = async (updates) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setUserProfile(prev => ({ ...prev, ...updates }));
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, message: 'Failed to update settings' };
     }
   };
 
@@ -333,6 +352,7 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     linkTeamMember,
     unlinkTeamMember,
+    updateProfileSettings,
     inviteCode: userProfile?.invite_code || '------'
   };
 

@@ -44,6 +44,9 @@ function Navbar() {
               <Link to="/team" className={location.pathname === '/team' ? 'active' : ''}>Team Up</Link>
             </li>
             <li>
+              <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>Settings</Link>
+            </li>
+            <li>
               <Link to="/app" className={`nav-cta ${location.pathname === '/app' ? 'active' : ''}`}>Tracker</Link>
             </li>
             <li>

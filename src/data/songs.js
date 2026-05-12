@@ -14,7 +14,15 @@ export const dailySongs = [
   "05elIJBH1WEnf6azmY7lds", // Day 5
   "7AnheOTH7WsZGvIZ7gbfPW", // Day 6
   "7AnheOTH7WsZGvIZ7gbfPW", // Day 7
-  ...Array(53).fill(PLACEHOLDER_ID)
+  "2CDwrcTbzeHH3nb9T18dMz", // Day 8
+  "3hikJmQrtd5dtDpEXVPvVM", // Day 9
+  "4RN16d4LOSD4n0etHNQOUh", // Day 10
+  "1V2w7DSWtqs5oqcP7uCLiP", // Day 11
+  "5hyJiuBOLmpvsxHwBJS3QF", // Day 12
+  "05IQ4M1YJFHX673w5KSA4k", // Day 13
+  "5GnjW8BATPkkXa0BziCpuT", // Day 14
+  "3y4Ln80zTypD1sXfkqrzKF", // Day 15
+  ...Array(45).fill(PLACEHOLDER_ID)
 ];
 
 // Example of how you would fill it out:

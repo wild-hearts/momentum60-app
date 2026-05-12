@@ -13,7 +13,7 @@ export const dailySongs = [
   "0NDhaRzGmlXMcACR80hqjV", // Day 4
   "05elIJBH1WEnf6azmY7lds", // Day 5
   "7AnheOTH7WsZGvIZ7gbfPW", // Day 6
-  "7AnheOTH7WsZGvIZ7gbfPW", // Day 7
+  "3KqJb8TNubRQpLQeGXy2KE", // Day 7
   "2CDwrcTbzeHH3nb9T18dMz", // Day 8
   "3hikJmQrtd5dtDpEXVPvVM", // Day 9
   "4RN16d4LOSD4n0etHNQOUh", // Day 10

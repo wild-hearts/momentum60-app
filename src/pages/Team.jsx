@@ -4,9 +4,11 @@ import { Users, Copy, CheckCircle } from 'lucide-react';
 import './Landing.css';
 
 function Team() {
-  const { user, inviteCode, teamMember, linkTeam } = useContext(AuthContext);
+  const { user, inviteCode, teamMember, linkTeamMember, unlinkTeamMember } = useContext(AuthContext);
   const [friendCode, setFriendCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [linkMessage, setLinkMessage] = useState({ type: '', text: '' });
+  const [isLinking, setIsLinking] = useState(false);
 
   if (!user) {
     return (
@@ -25,10 +27,23 @@ function Team() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleLink = (e) => {
+  const handleLink = async (e) => {
     e.preventDefault();
+    setLinkMessage({ type: '', text: '' });
+    
     if (friendCode.length === 6) {
-      linkTeam(friendCode);
+      setIsLinking(true);
+      const result = await linkTeamMember(friendCode);
+      setIsLinking(false);
+      
+      if (result.success) {
+        setLinkMessage({ type: 'success', text: 'Successfully teamed up!' });
+        setFriendCode('');
+      } else {
+        setLinkMessage({ type: 'error', text: result.message });
+      }
+    } else {
+      setLinkMessage({ type: 'error', text: 'Code must be exactly 6 characters.' });
     }
   };
 
@@ -57,8 +72,11 @@ function Team() {
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Link a Friend</h3>
             {teamMember ? (
               <div>
-                <p style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem' }}>Successfully linked!</p>
-                <p>You are now teamed up with User <strong>{teamMember}</strong>.</p>
+                <p style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle size={20} /> Successfully linked!</p>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>You are now teamed up and holding each other accountable.</p>
+                <button onClick={unlinkTeamMember} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>
+                  Unlink Account
+                </button>
               </div>
             ) : (
               <form onSubmit={handleLink}>
@@ -71,7 +89,14 @@ function Team() {
                   placeholder="e.g., A1B2C3"
                   style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.25rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '1rem' }}
                 />
-                <button type="submit" className="cta-button primary" style={{ width: '100%' }}>LINK ACCOUNT</button>
+                {linkMessage.text && (
+                  <div style={{ color: linkMessage.type === 'success' ? '#10b981' : '#ef4444', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                    {linkMessage.text}
+                  </div>
+                )}
+                <button type="submit" disabled={isLinking} className="cta-button primary" style={{ width: '100%', opacity: isLinking ? 0.7 : 1 }}>
+                  {isLinking ? 'LINKING...' : 'LINK ACCOUNT'}
+                </button>
               </form>
             )}
           </div>

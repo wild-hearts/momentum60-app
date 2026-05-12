@@ -14,7 +14,11 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState({});
   const [userProfile, setUserProfile] = useState(null);
   const [dailyReflections, setDailyReflections] = useState({});
-  const [teamMember, setTeamMember] = useState(null); // Keep team linking local/simple for now
+  const [teamMember, setTeamMember] = useState(null);
+  
+  const generateInviteCode = () => {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -97,6 +101,9 @@ export const AuthProvider = ({ children }) => {
       
       if (!profileError && profileData) {
         setUserProfile(profileData);
+        if (profileData.partner_id) {
+          setTeamMember(profileData.partner_id);
+        }
       }
 
       // Fetch Reflections
@@ -204,9 +211,10 @@ export const AuthProvider = ({ children }) => {
   const startChallenge = async (mode) => {
     if (!user) return;
     try {
+      const inviteCode = generateInviteCode();
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert({ user_id: user.id, accountability_mode: mode })
+        .insert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode })
         .select()
         .single();
         
@@ -268,6 +276,43 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
   };
 
+  const linkTeamMember = async (friendCode) => {
+    if (!user) return { success: false, message: 'Not logged in' };
+    try {
+      const { data, error } = await supabase.rpc('link_partner_by_code', { friend_code: friendCode });
+      
+      if (error) throw error;
+      
+      if (data === true) {
+        // Fetch updated profile
+        await fetchUserData(user.id);
+        return { success: true };
+      } else {
+        return { success: false, message: 'Invalid code or user not found' };
+      }
+    } catch (error) {
+      console.error('Error linking accounts:', error);
+      return { success: false, message: 'An error occurred' };
+    }
+  };
+
+  const unlinkTeamMember = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ partner_id: null })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setTeamMember(null);
+      await fetchUserData(user.id);
+    } catch (error) {
+      console.error('Error unlinking account:', error);
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -286,7 +331,9 @@ export const AuthProvider = ({ children }) => {
     signOut,
     resetPassword,
     updatePassword,
-    linkTeamMember: (code) => setTeamMember({ name: "Accountability Partner", code })
+    linkTeamMember,
+    unlinkTeamMember,
+    inviteCode: userProfile?.invite_code || '------'
   };
 
   return (

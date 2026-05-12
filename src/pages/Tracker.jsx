@@ -11,15 +11,25 @@ import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { customRules, userData, toggleDayItem, resetProgress } = useContext(AuthContext);
+  const { user, customRules, userData, toggleDayItem, resetProgress } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
+  const [rewardModal, setRewardModal] = useState(false);
+  const [songType, setSongType] = useState('');
+  const [songTopic, setSongTopic] = useState('');
 
   const isDayCompleted = (dayNum) => {
     const dayData = userData[dayNum];
     if (!dayData) return false;
     // The "Smaller Version" rule: at least 1 item must be completed to not be a zero day
     return customRules.some(rule => dayData[rule.id] === true || dayData[rule.id] === 'true'); // Handle supabase booleans/strings
+  };
+
+  const isDayPerfect = (dayNum) => {
+    const dayData = userData[dayNum];
+    if (!dayData) return false;
+    // Perfect day means all 5 rules are checked
+    return customRules.every(rule => dayData[rule.id] === true || dayData[rule.id] === 'true');
   };
 
   const getUnlockedDaysCount = () => {
@@ -45,6 +55,33 @@ function Tracker() {
     if (isDayCompleted(i)) completedCount++;
   }
   const progressPercentage = (completedCount / 60) * 100;
+
+  // Calculate Perfect Streaks
+  let currentPerfectStreak = 0;
+  let longestPerfectStreak = 0;
+  
+  for (let i = 1; i <= 60; i++) {
+    if (isDayPerfect(i)) {
+      currentPerfectStreak++;
+      longestPerfectStreak = Math.max(longestPerfectStreak, currentPerfectStreak);
+    } else {
+      if (isDayCompleted(i)) {
+        // They completed at least one task, but not all 5. Streak broken.
+        currentPerfectStreak = 0;
+      } else {
+        // This day hasn't been started yet. Stop counting here so we don't break the current streak.
+        break;
+      }
+    }
+  }
+
+  const handleRewardSubmit = (e) => {
+    e.preventDefault();
+    const subject = encodeURIComponent("40-Day Perfect Streak Reward: Custom Song Request");
+    const body = encodeURIComponent(`User Email: ${user?.email || 'N/A'}\n\nType of Song requested:\n${songType}\n\nWhat should it be about:\n${songTopic}`);
+    window.location.href = `mailto:info@wildheartspublishing.com.au?subject=${subject}&body=${body}`;
+    setRewardModal(false);
+  };
 
   const handleStartOver = async () => {
     await resetProgress();
@@ -155,13 +192,31 @@ function Tracker() {
         </div>
       </section>
 
-      <section className="progress-section">
-        <div className="progress-bar-container">
-          <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
+      <section className="progress-section" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div>
+          <div className="progress-bar-container">
+            <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
+          </div>
+          <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+            <span>{completedCount} of 60 Days Completed</span>
+            <span style={{ color: '#ec4899', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
+            </span>
+          </div>
         </div>
-        <div className="progress-text">
-          {completedCount} of 60 Days Completed
-        </div>
+
+        {longestPerfectStreak >= 40 && (
+          <div style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ec4899', textAlign: 'center', animation: 'pulse 2s infinite' }}>
+            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(236,72,153,0.5)' }}>🎉 YOU DID IT! 40 PERFECT DAYS! 🎉</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You unlocked the ultimate reward: A personal song written by The Winks.</p>
+            <button 
+              onClick={() => setRewardModal(true)}
+              style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(236,72,153,0.4)' }}
+            >
+              Claim Your Song
+            </button>
+          </div>
+        )}
       </section>
 
       <main className="days-grid">
@@ -308,6 +363,54 @@ function Tracker() {
             >
               Continue building momentum
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Reward Claim Modal */}
+      {rewardModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setRewardModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#111827', border: '1px solid #ec4899', boxShadow: '0 25px 50px -12px rgba(236, 72, 153, 0.3)' }} onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setRewardModal(false)}>&times;</button>
+            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
+              Claim Your Personal Song
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+              You've hit 40 perfect days in a row. As promised, The Winks are going to write a song specifically for you. Fill out the details below to send your request directly to the band!
+            </p>
+
+            <form onSubmit={handleRewardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'white', fontWeight: 'bold' }}>What type of song do you want? (Genre/Vibe)</label>
+                <input 
+                  type="text" 
+                  value={songType}
+                  onChange={(e) => setSongType(e.target.value)}
+                  placeholder="e.g. Acoustic, Rock, Upbeat Pop, Moody Indie..."
+                  required
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem' }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'white', fontWeight: 'bold' }}>What do you want the song to be about?</label>
+                <textarea 
+                  value={songTopic}
+                  onChange={(e) => setSongTopic(e.target.value)}
+                  placeholder="Tell The Winks the story or message you want captured in your song..."
+                  required
+                  rows="4"
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem', resize: 'vertical' }}
+                />
+              </div>
+
+              <button 
+                type="submit"
+                style={{ width: '100%', marginTop: '1rem', padding: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', fontSize: '1.1rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Send Request to The Winks
+              </button>
+            </form>
           </div>
         </div>
       )}

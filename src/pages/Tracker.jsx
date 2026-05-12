@@ -11,12 +11,14 @@ import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { user, customRules, userData, toggleDayItem, resetProgress } = useContext(AuthContext);
+  const { user, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
   const [rewardModal, setRewardModal] = useState(false);
   const [songType, setSongType] = useState('');
   const [songTopic, setSongTopic] = useState('');
+  const [hasFailed, setHasFailed] = useState(false);
+  const [failedDay, setFailedDay] = useState(null);
 
   const isDayCompleted = (dayNum) => {
     const dayData = userData[dayNum];
@@ -32,23 +34,34 @@ function Tracker() {
     return customRules.every(rule => dayData[rule.id] === true || dayData[rule.id] === 'true');
   };
 
-  const getUnlockedDaysCount = () => {
-    let unlocked = 1;
-    for (let i = 1; i < 60; i++) {
-      if (isDayCompleted(i)) {
-        unlocked = i + 1;
-      } else {
+  const getActiveDay = () => {
+    if (!userProfile?.start_date) return 1;
+    const start = new Date(userProfile.start_date);
+    start.setHours(0,0,0,0);
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const diffTime = Math.abs(now - start);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return Math.min(diffDays + 1, 60);
+  };
+
+  const activeCalendarDay = getActiveDay();
+  
+  // Calculate Mascot state based on active calendar day
+  const currentDayData = userData[activeCalendarDay] || {};
+  const isFed = customRules.some(rule => currentDayData[rule.id]);
+
+  // Check for Failure (Zero Days in the past)
+  React.useEffect(() => {
+    if (!userProfile) return;
+    for (let i = 1; i < activeCalendarDay; i++) {
+      if (!isDayCompleted(i)) {
+        setHasFailed(true);
+        setFailedDay(i);
         break;
       }
     }
-    return Math.min(unlocked, 60);
-  };
-
-  const highestUnlockedDay = getUnlockedDaysCount();
-  
-  // Calculate Mascot state
-  const currentDayData = userData[highestUnlockedDay] || {};
-  const isFed = customRules.some(rule => currentDayData[rule.id]);
+  }, [userProfile, activeCalendarDay, userData]);
   
   let completedCount = 0;
   for (let i = 1; i <= 60; i++) {
@@ -86,15 +99,19 @@ function Tracker() {
   const handleStartOver = async () => {
     await resetProgress();
     setSelectedDay(null);
+    setHasFailed(false);
+    setFailedDay(null);
   };
 
   const handleDayClick = (dayNum) => {
-    if (dayNum > highestUnlockedDay) return;
+    if (dayNum > activeCalendarDay) return;
     playClick();
     setSelectedDay(dayNum);
   };
 
   const toggleRule = async (ruleId) => {
+    if (selectedDay !== activeCalendarDay) return; // Cannot edit past days
+    
     playClick();
     
     const dayData = userData[selectedDay] || {};
@@ -150,6 +167,35 @@ function Tracker() {
 
   const daysArray = Array.from({ length: 60 }, (_, i) => i + 1);
 
+  if (!userProfile) {
+    return (
+      <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Welcome to Momentum 60</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6' }}>
+            Before we lock in your starting clock, choose your accountability mode. This decides how you prove your daily progress.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <button 
+              onClick={() => startChallenge('honor')}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <h3 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '0.5rem' }}>🛡️ The Honor System</h3>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>No extra steps. Just check the boxes every day. You're only cheating yourself if you lie.</p>
+            </button>
+            <button 
+              onClick={() => startChallenge('journal')}
+              style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid #ec4899', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <h3 style={{ color: '#ec4899', fontSize: '1.25rem', marginBottom: '0.5rem' }}>📖 Journal Mode (Recommended)</h3>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>A daily text reflection is required. At the end of the 60 days, you get a chronological document of your entire mental journey.</p>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       <header className="header">
@@ -161,14 +207,14 @@ function Tracker() {
         </div>
       </header>
 
-      <Mascot unlockedDays={highestUnlockedDay} isTodayCompleted={isFed} />
+      <Mascot unlockedDays={activeCalendarDay} isTodayCompleted={isFed} />
 
       <section className="tracker-instructions" style={{ maxWidth: '1000px', margin: '0 auto 3rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', textAlign: 'left' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#ec4899', fontWeight: '700' }}>Your Daily Non-Negotiables</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
-          Click on today's tile below to access your unique <strong>Soul Focus Prompt</strong> and your checklist. 
+          <strong>The Clock is Ticking:</strong> This challenge operates on a strict 24-hour calendar. You cannot skip ahead, and you cannot edit yesterday's progress. Click on today's tile below to access your daily tasks.
           <br /><br />
-          <strong>The Non-Zero Rule:</strong> Even some progress is better than none. A smaller version still counts. To keep the chain alive, you must complete <strong>at least ONE</strong> of these tasks every day. If you have a true "zero day" where you do absolutely nothing, you must hit Fail and start over.
+          <strong>The Non-Zero Rule:</strong> Even some progress is better than none. To keep the chain alive, you must complete <strong>at least ONE</strong> of these tasks every day. If you have a true "zero day", the system will detect it and force you to start over.
         </p>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #ec4899' }}>
@@ -240,14 +286,19 @@ function Tracker() {
       <main className="days-grid">
         {daysArray.map((dayNum, index) => {
           const isCompleted = isDayCompleted(dayNum);
-          const isLocked = dayNum > highestUnlockedDay;
+          const isLocked = dayNum > activeCalendarDay;
+          const isPast = dayNum < activeCalendarDay;
           
           return (
             <div 
               key={dayNum} 
-              className={`day-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`}
+              className={`day-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${dayNum === activeCalendarDay ? 'active' : ''}`}
               onClick={() => handleDayClick(dayNum)}
-              style={{ animationDelay: `${(index % 10) * 0.05}s` }}
+              style={{ 
+                animationDelay: `${(index % 10) * 0.05}s`,
+                boxShadow: dayNum === activeCalendarDay ? '0 0 20px rgba(236, 72, 153, 0.5)' : 'none',
+                border: dayNum === activeCalendarDay ? '2px solid #ec4899' : 'none'
+              }}
             >
               <div className="day-card-inner">
                 <div 
@@ -258,7 +309,7 @@ function Tracker() {
                   <div className="day-card-content">
                     <div className="day-number">{dayNum}</div>
                     <div className="day-status">
-                      {isLocked ? 'Locked' : (isCompleted ? 'Completed' : 'Pending')}
+                      {isLocked ? 'Locked' : (isPast ? 'Past' : (isCompleted ? 'Completed' : 'Pending'))}
                     </div>
                   </div>
                 </div>
@@ -309,9 +360,11 @@ function Tracker() {
               ></iframe>
             </div>
 
-            <h2 className="modal-task-title" style={{ marginBottom: '1.5rem', textAlign: 'left', fontSize: '1.25rem' }}>The Momentum 5 Checklist</h2>
+            <h2 className="modal-task-title" style={{ marginBottom: '1.5rem', textAlign: 'left', fontSize: '1.25rem' }}>
+              {selectedDay === activeCalendarDay ? 'The Momentum 5 Checklist' : 'Past Progress'}
+            </h2>
             
-            <div className="rules-checklist" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="rules-checklist" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
               {customRules.map(rule => {
                 const isRuleDone = userData[selectedDay] && userData[selectedDay][rule.id];
                 return (
@@ -326,7 +379,8 @@ function Tracker() {
                       background: isRuleDone ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.1)',
                       border: `1px solid ${isRuleDone ? '#10b981' : 'rgba(255, 255, 255, 0.2)'}`,
                       borderRadius: '12px',
-                      cursor: 'pointer',
+                      cursor: selectedDay === activeCalendarDay ? 'pointer' : 'not-allowed',
+                      opacity: selectedDay === activeCalendarDay ? 1 : 0.7,
                       transition: 'all 0.2s',
                       alignItems: 'flex-start'
                     }}
@@ -353,12 +407,46 @@ function Tracker() {
               })}
             </div>
 
+            {userProfile?.accountability_mode === 'journal' && (
+              <div className="reflection-section" style={{ textAlign: 'left', marginBottom: '2rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ec4899', fontWeight: 'bold' }}>
+                  Daily Reflection (Required for Journal Mode)
+                </label>
+                <textarea
+                  value={dailyReflections[selectedDay] || ''}
+                  onChange={(e) => saveReflection(selectedDay, e.target.value)}
+                  disabled={selectedDay !== activeCalendarDay}
+                  placeholder={selectedDay === activeCalendarDay ? "Write your thoughts, struggles, or wins for today..." : "No reflection recorded for this day."}
+                  rows="5"
+                  style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem', resize: 'vertical' }}
+                />
+              </div>
+            )}
+
             <button 
               className={`modal-action-btn ${isDayCompleted(selectedDay) ? 'completed' : ''}`}
               style={{ marginTop: '2rem' }}
               onClick={() => setSelectedDay(null)}
             >
               {isDayCompleted(selectedDay) ? 'All Done! Close Modal' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fail Modal */}
+      {hasFailed && (
+        <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.95)' }}>
+          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'center', background: '#111827', border: '2px solid #ef4444', boxShadow: '0 0 50px rgba(239, 68, 68, 0.3)' }}>
+            <h2 style={{ fontSize: '3rem', color: '#ef4444', marginBottom: '1rem', fontWeight: '900', textTransform: 'uppercase' }}>Chain Broken</h2>
+            <p style={{ fontSize: '1.2rem', color: 'white', marginBottom: '2rem', lineHeight: '1.6' }}>
+              You had a zero-day on <strong>Day {failedDay}</strong>. The Non-Zero Rule is absolute. The universe doesn't pause, and neither does the calendar.
+            </p>
+            <button 
+              onClick={handleStartOver}
+              style={{ background: '#ef4444', color: 'white', padding: '1rem 2rem', fontSize: '1.2rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', width: '100%' }}
+            >
+              Accept Failure & Start Over
             </button>
           </div>
         </div>

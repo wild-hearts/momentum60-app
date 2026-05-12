@@ -12,6 +12,8 @@ export const AuthProvider = ({ children }) => {
   // Data state
   const [customRules, setCustomRules] = useState([]);
   const [userData, setUserData] = useState({});
+  const [userProfile, setUserProfile] = useState(null);
+  const [dailyReflections, setDailyReflections] = useState({});
   const [teamMember, setTeamMember] = useState(null); // Keep team linking local/simple for now
 
   useEffect(() => {
@@ -34,6 +36,8 @@ export const AuthProvider = ({ children }) => {
         // Clear data on logout
         setCustomRules([]);
         setUserData({});
+        setUserProfile(null);
+        setDailyReflections({});
         setLoading(false);
       }
     });
@@ -83,6 +87,31 @@ export const AuthProvider = ({ children }) => {
       });
       
       setUserData(formattedData);
+
+      // Fetch Profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (!profileError && profileData) {
+        setUserProfile(profileData);
+      }
+
+      // Fetch Reflections
+      const { data: reflectionData, error: reflectionError } = await supabase
+        .from('daily_reflections')
+        .select('*');
+      
+      if (!reflectionError && reflectionData) {
+        const formattedReflections = {};
+        reflectionData.forEach(row => {
+          formattedReflections[row.day_number] = row.content;
+        });
+        setDailyReflections(formattedReflections);
+      }
+
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -161,10 +190,51 @@ export const AuthProvider = ({ children }) => {
     if (window.confirm("Are you sure you want to fail and start over? This will permanently delete all your progress. Your rules will be kept.")) {
       try {
         await supabase.from('user_progress').delete().eq('user_id', user.id);
+        await supabase.from('daily_reflections').delete().eq('user_id', user.id);
+        await supabase.from('user_profiles').delete().eq('user_id', user.id);
         setUserData({});
+        setDailyReflections({});
+        setUserProfile(null);
       } catch (error) {
         console.error('Error resetting progress:', error);
       }
+    }
+  };
+
+  const startChallenge = async (mode) => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert({ user_id: user.id, accountability_mode: mode })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error starting challenge:', error);
+      alert('Failed to start challenge. Please try again.');
+    }
+  };
+
+  const saveReflection = async (dayNumber, content) => {
+    if (!user) return;
+    
+    // Optimistic
+    setDailyReflections(prev => ({ ...prev, [dayNumber]: content }));
+    
+    try {
+      const { error } = await supabase
+        .from('daily_reflections')
+        .upsert(
+          { user_id: user.id, day_number: dayNumber, content: content },
+          { onConflict: 'user_id, day_number' }
+        );
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving reflection:', error);
     }
   };
 
@@ -203,10 +273,14 @@ export const AuthProvider = ({ children }) => {
     loading,
     customRules,
     userData,
+    userProfile,
+    dailyReflections,
     teamMember,
     updateRules,
     toggleDayItem,
     resetProgress,
+    startChallenge,
+    saveReflection,
     signUp,
     signIn,
     signOut,

@@ -269,16 +269,38 @@ function Tracker() {
           </ul>
         </div>
 
+        {userProfile?.accountability_mode === 'journal' && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <button 
+              onClick={() => navigate('/summary')}
+              style={{ background: 'transparent', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem' }}
+            >
+              📖 View Ongoing Journal
+            </button>
+          </div>
+        )}
+
         {(longestPerfectStreak >= 40 || completedCount >= 60) && (
           <div style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ec4899', textAlign: 'center', animation: 'pulse 2s infinite' }}>
             <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(236,72,153,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You earned a personal song written by The Winks.</p>
-            <button 
-              onClick={() => setRewardModal(true)}
-              style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(236,72,153,0.4)' }}
-            >
-              Claim Your Song
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => setRewardModal(true)}
+                style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(236,72,153,0.4)' }}
+              >
+                Claim Your Song
+              </button>
+              
+              {userProfile?.accountability_mode === 'journal' && (
+                <button 
+                  onClick={() => navigate('/summary')}
+                  style={{ background: 'transparent', color: '#ec4899', padding: '0.75rem 2rem', border: '2px solid #ec4899', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Read Your Final Summary
+                </button>
+              )}
+            </div>
           </div>
         )}
       </section>

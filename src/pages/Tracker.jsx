@@ -205,10 +205,28 @@ function Tracker() {
           </div>
         </div>
 
-        {longestPerfectStreak >= 40 && (
+        <div className="milestone-roadmap" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
+          <h3 style={{ fontSize: '1.25rem', color: '#ec4899', marginBottom: '1rem' }}>Your Journey Milestones</h3>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <li style={{ opacity: completedCount >= 15 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>{completedCount >= 15 ? '✅' : '🔒'}</span> <strong>15 Days of Momentum:</strong> Unlocks the Sprout Mascot.
+            </li>
+            <li style={{ opacity: completedCount >= 30 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>{completedCount >= 30 ? '✅' : '🔒'}</span> <strong>30 Days of Momentum:</strong> Unlocks the Sapling Mascot.
+            </li>
+            <li style={{ opacity: longestPerfectStreak >= 40 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem', color: longestPerfectStreak >= 40 ? '#10b981' : 'inherit' }}>
+              <span>{longestPerfectStreak >= 40 ? '🔥' : '🔒'}</span> <strong>40-Day Perfect Streak:</strong> 5/5 tasks daily unlocks a personal song by The Winks!
+            </li>
+            <li style={{ opacity: completedCount >= 60 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem', color: completedCount >= 60 ? '#10b981' : 'inherit' }}>
+              <span>{completedCount >= 60 ? '🦅' : '🔒'}</span> <strong>60 Days of Momentum:</strong> Complete the challenge for the Phoenix Mascot AND a personal song!
+            </li>
+          </ul>
+        </div>
+
+        {(longestPerfectStreak >= 40 || completedCount >= 60) && (
           <div style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ec4899', textAlign: 'center', animation: 'pulse 2s infinite' }}>
-            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(236,72,153,0.5)' }}>🎉 YOU DID IT! 40 PERFECT DAYS! 🎉</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You unlocked the ultimate reward: A personal song written by The Winks.</p>
+            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(236,72,153,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You earned a personal song written by The Winks.</p>
             <button 
               onClick={() => setRewardModal(true)}
               style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(236,72,153,0.4)' }}
@@ -376,7 +394,7 @@ function Tracker() {
               Claim Your Personal Song
             </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-              You've hit 40 perfect days in a row. As promised, The Winks are going to write a song specifically for you. Fill out the details below to send your request directly to the band!
+              You've conquered the challenge. As promised, The Winks are going to write a song specifically for you. Fill out the details below to send your request directly to the band!
             </p>
 
             <form onSubmit={handleRewardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

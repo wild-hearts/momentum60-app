@@ -28,7 +28,8 @@ export const dailySongs = [
   "4kFbUt8U5IL1HSmHhoytXt", // Day 19
   "7hsOgM45TNaWRaQV7nR5xf", // Day 20
   "3xVmrR7jrLCoQ0R4OKPU5S", // Day 21
-  ...Array(39).fill(PLACEHOLDER_ID)
+  "7FxgmaO0rd91kek3wceoiF", // Day 22
+  ...Array(38).fill(PLACEHOLDER_ID)
 ];
 
 // Example of how you would fill it out:

@@ -6,7 +6,13 @@
 // I have filled these with the Day 1 track for now. You can replace them with the actual 60 track IDs from "The Winks" as you go.
 const PLACEHOLDER_ID = "5tsYOzDHNKmmsuPCnwnbKm"; 
 
-export const dailySongs = Array.from({ length: 60 }, (_, i) => PLACEHOLDER_ID);
+export const dailySongs = [
+  "5tsYOzDHNKmmsuPCnwnbKm", // Day 1
+  "5WmSVAl88eO5yhMn4rDfMk", // Day 2
+  "3AWnsk0WFiu7hyEnbnK2Fs", // Day 3
+  "0NDhaRzGmlXMcACR80hqjV", // Day 4
+  ...Array(56).fill(PLACEHOLDER_ID)
+];
 
 // Example of how you would fill it out:
 /*

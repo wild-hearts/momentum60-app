@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { motivationalQuotes } from '../data/quotes';
+import { dailySongs } from '../data/songs';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
 import './Tracker.css';
@@ -216,9 +217,23 @@ function Tracker() {
             </button>
             <div className="modal-day-badge" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', color: 'white', padding: '0.25rem 1rem', borderRadius: '999px', display: 'inline-block', marginBottom: '1.5rem', fontWeight: 'bold' }}>Day {selectedDay}</div>
             
-            <div className="daily-prompt-section" style={{ background: 'rgba(236, 72, 153, 0.1)', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #ec4899', marginBottom: '2rem', textAlign: 'left' }}>
+            <div className="daily-prompt-section" style={{ background: 'rgba(236, 72, 153, 0.1)', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #ec4899', marginBottom: '1.5rem', textAlign: 'left' }}>
               <h3 style={{ fontSize: '1.1rem', color: '#ec4899', marginBottom: '0.5rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Soul Focus Prompt:</h3>
               <p style={{ fontSize: '1.15rem', color: 'var(--text-primary)', lineHeight: '1.6', fontWeight: '500' }}>{dailyPrompts[selectedDay - 1]}</p>
+            </div>
+
+            <div className="daily-anthem-section" style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#8b5cf6', marginBottom: '0.5rem', textAlign: 'left', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Anthem:</h3>
+              <iframe 
+                style={{ borderRadius: '12px' }} 
+                src={`https://open.spotify.com/embed/track/${dailySongs[selectedDay - 1]}?utm_source=generator&theme=0`} 
+                width="100%" 
+                height="152" 
+                frameBorder="0" 
+                allowFullScreen="" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+              ></iframe>
             </div>
 
             <h2 className="modal-task-title" style={{ marginBottom: '1.5rem', textAlign: 'left', fontSize: '1.25rem' }}>The Momentum 5 Checklist</h2>

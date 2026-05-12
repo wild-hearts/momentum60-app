@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
+import { motivationalQuotes } from '../data/quotes';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
 import './Tracker.css';
@@ -11,6 +12,7 @@ function Tracker() {
   const navigate = useNavigate();
   const { customRules, userData, toggleDayItem, resetProgress } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
 
   const isDayCompleted = (dayNum) => {
     const dayData = userData[dayNum];
@@ -85,6 +87,10 @@ function Tracker() {
     
     if (allNowDone && !wasDone) {
       playChime();
+      
+      // Select a random quote
+      const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+      
       if (selectedDay === 60) {
         var duration = 3000;
         var end = Date.now() + duration;
@@ -96,6 +102,11 @@ function Tracker() {
       } else {
          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
       }
+      
+      // Delay the quote modal slightly so confetti has time to pop
+      setTimeout(() => {
+        setQuoteModal({ show: true, quote: randomQuote });
+      }, 800);
     }
   };
 
@@ -121,6 +132,19 @@ function Tracker() {
           <br /><br />
           <strong>The Non-Zero Rule:</strong> Even some progress is better than none. A smaller version still counts. To keep the chain alive, you must complete <strong>at least ONE</strong> of these tasks every day. If you have a true "zero day" where you do absolutely nothing, you must hit Fail and start over.
         </p>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #ec4899' }}>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', color: '#ec4899', marginBottom: '0.25rem' }}>Make this challenge yours.</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>You can customize these 5 non-negotiable rules at any time to fit your goals.</p>
+          </div>
+          <button 
+            onClick={() => navigate('/rules')} 
+            style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid #ec4899', color: '#ec4899', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Customize Rules
+          </button>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
           {customRules.map(rule => (
             <div key={rule.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #ec4899' }}>
@@ -247,6 +271,27 @@ function Tracker() {
               onClick={() => setSelectedDay(null)}
             >
               {isDayCompleted(selectedDay) ? 'All Done! Close Modal' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Quote Modal */}
+      {quoteModal.show && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setQuoteModal({ show: false, quote: '' })}>
+          <div className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
+              Day Completed
+            </h2>
+            <div style={{ fontSize: '1.4rem', color: 'white', fontStyle: 'italic', lineHeight: '1.6', margin: '2rem 0', fontWeight: '500' }}>
+              "{quoteModal.quote}"
+            </div>
+            <button 
+              className="cta-button primary"
+              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}
+              onClick={() => { playClick(); setQuoteModal({ show: false, quote: '' }); }}
+            >
+              Continue building momentum
             </button>
           </div>
         </div>

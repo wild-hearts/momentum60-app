@@ -1,4 +1,5 @@
 import React from 'react';
+import { mascotLore } from '../data/mascotLore';
 import stage01 from '../assets/mascot/v2/phoenix_v2_stage01.png';
 import stage02 from '../assets/mascot/v2/phoenix_v2_stage02.png';
 import stage03 from '../assets/mascot/v2/phoenix_v2_stage03.png';
@@ -42,9 +43,6 @@ function Mascot({ unlockedDays, isTodayCompleted }) {
   
   const currentStageImage = STAGE_IMAGES[stageIndex];
   const stageName = STAGE_NAMES[stageIndex];
-  const description = stageIndex === 19 
-    ? "Maximum Evolution! Do not break the chain." 
-    : "Momentum is building. Keep going.";
 
   return (
     <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
@@ -67,7 +65,9 @@ function Mascot({ unlockedDays, isTodayCompleted }) {
       </div>
       
       <h3 style={{ fontSize: '1.5rem', color: '#ec4899', marginTop: '1.5rem', fontWeight: 'bold' }}>{stageName}</h3>
-      <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '1.1rem' }}>{description}</p>
+      <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '1.1rem', fontStyle: 'italic', padding: '0 1rem' }}>
+        "{mascotLore[stageIndex]}"
+      </p>
       
       <div style={{ marginTop: '1.5rem', background: 'rgba(0,0,0,0.4)', borderRadius: '999px', height: '16px', width: '250px', margin: '1.5rem auto 0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ 

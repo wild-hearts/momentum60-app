@@ -56,13 +56,14 @@ export const AuthProvider = ({ children }) => {
         setCustomRules(rulesData);
       } else {
         // Default rules if none exist
-        setCustomRules([
-          { id: 'diet', label: 'Stick to my diet', sort_order: 1 },
-          { id: 'workout', label: '45 min workout', sort_order: 2 },
-          { id: 'water', label: 'Drink 3L of water', sort_order: 3 },
-          { id: 'reading', label: 'Read 10 pages', sort_order: 4 },
-          { id: 'photo', label: 'Take progress photo', sort_order: 5 }
-        ]);
+        const defaultRules = [
+          { id: 'rule1', label: 'Do one scary or difficult task before you feel ready', sort_order: 1 },
+          { id: 'rule2', label: 'Execute your daily discipline with zero motivation', sort_order: 2 },
+          { id: 'rule3', label: 'Read 10 pages or listen to The Momentum Series', sort_order: 3 },
+          { id: 'rule4', label: '10 minutes of journaling/reflection', sort_order: 4 },
+          { id: 'rule5', label: 'Catch and eliminate "When I..." statements', sort_order: 5 }
+        ];
+        setCustomRules(defaultRules);
       }
 
       // Fetch Progress

@@ -1,0 +1,22 @@
+export const motivationalQuotes = [
+  "Do one scary or difficult task before you feel ready.",
+  "Execute your committed daily discipline, even with zero motivation. That is the 'But I Will' habit.",
+  "Catch and eliminate any thought that delays living until conditions are perfect. Zero 'When I...' statements.",
+  "Momentum starts with a single, messy step forward. Do not wait for confidence to show up.",
+  "The cost of continuing to wait for the 'perfect time' is your life.",
+  "Commit to being a beginner today. Do something you are bad at, proudly.",
+  "Forgive yourself for yesterday's mistakes and commit to showing up today.",
+  "Grit is a habit. Reinforce it by doing one extra, small hard thing.",
+  "The soul was always the story. Write down the chapter you want to write next.",
+  "Find joy in the repetition today. Focus on the process, not the outcome.",
+  "Acknowledge the boredom of consistency. Reframe it as the foundation of mastery.",
+  "Do the work today without expecting applause or immediate results.",
+  "You are building resilience right now. Do not break the chain.",
+  "Even some progress is better than none. A smaller version still counts.",
+  "Move before you are sure.",
+  "Fear loves preparation. Action destroys fear.",
+  "The only way to build momentum is to push through the initial friction.",
+  "Your future self is forged in the fires of today's discipline.",
+  "Stop waiting for permission to become who you are meant to be.",
+  "You showed up today. That is where clarity starts."
+];

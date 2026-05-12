@@ -1,0 +1,22 @@
+export const mascotLore = [
+  "The Spark: A fragile ember of potential. It requires immediate action to survive the day.",
+  "The Kindled Ember: You have fed the flame. Momentum is beginning to build beneath the surface.",
+  "The Flickering Flame: The warmth grows. What felt impossible yesterday feels slightly easier today.",
+  "The Ignition: A true fire has caught. Your daily discipline is no longer just an idea; it is an action.",
+  "The Fledgling Flare: Momentum is building. Your daily actions are forging wings of fire.",
+  "The Steady Burn: The fire sustains itself. Consistency is becoming your default state.",
+  "The Rising Heat: Doubts begin to burn away. You are learning to move before you feel ready.",
+  "The Radiant Glow: You illuminate the dark. Your discipline shines through the friction of life.",
+  "The Unyielding Fire: The 'But I Will' habit is locked in. Zero motivation cannot stop you now.",
+  "The Focused Beam: The energy is concentrated. You are directing your momentum with clear intention.",
+  "The Roaring Blaze: You are undeniably changing. The old version of you is turning to ash.",
+  "The Ascending Spark: The fire lifts off. You are no longer bound by 'When I...' statements.",
+  "The Solar Flare: A burst of undeniable power. You are executing despite fear or resistance.",
+  "The Molten Core: The heat is absolute. Your internal growth is radiating outward.",
+  "The Phoenix Rising: The ashes are left behind. You have rebuilt yourself through relentless action.",
+  "The Crimson Wings: You command the fire. Discipline is no longer a struggle; it is your nature.",
+  "The Eternal Flame: The momentum is unbreakable. You have mastered the art of the Non-Zero day.",
+  "The Celestial Fire: You are a force of nature. Your progress inspires everything around you.",
+  "The Supernova: The ultimate expression of your potential. You have become entirely unrecognizable from Day 1.",
+  "The Cosmic Phoenix: Mastery achieved. You have conquered the 60 days. The fire is now a part of your soul."
+];

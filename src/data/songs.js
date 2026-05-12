@@ -59,7 +59,7 @@ export const dailySongs = [
   "7vAoz62x6QK2SKXTO6wnhz", // Day 50
   "7BqNtiu6kOeMyhod34FzaC", // Day 51
   "7n1kDnMd3wJhTHlb7kfotR", // Day 52
-  "4hoqiMZfFQzSzlYxnAnH6g", // Day 53
+  "1n25ShUKNIkwEBPBSinCAu", // Day 53
   ...Array(7).fill(PLACEHOLDER_ID)
 ];
 

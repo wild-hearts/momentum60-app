@@ -3,8 +3,8 @@
 // A link looks like this: https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
 // The ID is the random text after "/track/": 4cOdK2wGLETKBW3PvgPWqT
 
-// I have filled these with a placeholder track for now. You can replace them with the actual 60 track IDs from "The Winks".
-const PLACEHOLDER_ID = "4cOdK2wGLETKBW3PvgPWqT"; // "Never Gonna Give You Up" placeholder - replace me!
+// I have filled these with the Day 1 track for now. You can replace them with the actual 60 track IDs from "The Winks" as you go.
+const PLACEHOLDER_ID = "5tsYOzDHNKmmsuPCnwnbKm"; 
 
 export const dailySongs = Array.from({ length: 60 }, (_, i) => PLACEHOLDER_ID);
 

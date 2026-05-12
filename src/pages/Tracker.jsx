@@ -51,42 +51,56 @@ function Tracker() {
   const currentDayData = userData[activeCalendarDay] || {};
   const isFed = customRules.some(rule => currentDayData[rule.id]);
 
-  // Check for Failure (Zero Days in the past)
-  React.useEffect(() => {
-    if (!userProfile) return;
-    for (let i = 1; i < activeCalendarDay; i++) {
-      if (!isDayCompleted(i)) {
-        setHasFailed(true);
-        setFailedDay(i);
-        break;
-      }
-    }
-  }, [userProfile, activeCalendarDay, userData]);
-  
   let completedCount = 0;
-  for (let i = 1; i <= 60; i++) {
-    if (isDayCompleted(i)) completedCount++;
-  }
-  const progressPercentage = (completedCount / 60) * 100;
-
-  // Calculate Perfect Streaks
   let currentPerfectStreak = 0;
   let longestPerfectStreak = 0;
-  
-  for (let i = 1; i <= 60; i++) {
-    if (isDayPerfect(i)) {
+  let passesAvailable = 0;
+  const passUsedDays = {};
+  let hasFailedCalc = false;
+  let failedDayCalc = null;
+
+  for (let i = 1; i <= Math.min(activeCalendarDay, 60); i++) {
+    const perfect = isDayPerfect(i);
+    const completed = isDayCompleted(i);
+
+    if (perfect) {
+      completedCount++;
       currentPerfectStreak++;
       longestPerfectStreak = Math.max(longestPerfectStreak, currentPerfectStreak);
+      // Earn a pass for every 10 consecutive perfect days
+      if (currentPerfectStreak > 0 && currentPerfectStreak % 10 === 0) {
+        passesAvailable++;
+      }
+    } else if (completed) {
+      completedCount++;
+      currentPerfectStreak = 0;
     } else {
-      if (isDayCompleted(i)) {
-        // They completed at least one task, but not all 5. Streak broken.
-        currentPerfectStreak = 0;
-      } else {
-        // This day hasn't been started yet. Stop counting here so we don't break the current streak.
-        break;
+      // ZERO DAY logic
+      currentPerfectStreak = 0;
+      if (i < activeCalendarDay) {
+        // Past day!
+        if (passesAvailable > 0) {
+          passesAvailable--;
+          passUsedDays[i] = true;
+          completedCount++; // Counts as survived!
+        } else {
+          hasFailedCalc = true;
+          failedDayCalc = i;
+          break; // Chain broken
+        }
       }
     }
   }
+
+  React.useEffect(() => {
+    if (!userProfile) return;
+    if (hasFailedCalc && !hasFailed) {
+      setHasFailed(true);
+      setFailedDay(failedDayCalc);
+    }
+  }, [userProfile, hasFailedCalc, failedDayCalc, hasFailed]);
+  
+  const progressPercentage = (completedCount / 60) * 100;
 
   const handleRewardSubmit = (e) => {
     e.preventDefault();
@@ -243,10 +257,12 @@ function Tracker() {
           <div className="progress-bar-container">
             <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
           </div>
-          <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+          <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <span>{completedCount} of 60 Days Completed</span>
             <span style={{ color: '#ec4899', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
+              <span style={{ margin: '0 0.5rem', color: 'rgba(255,255,255,0.3)' }}>|</span>
+              🎟️ Free Passes: {passesAvailable}
             </span>
           </div>
         </div>
@@ -254,6 +270,9 @@ function Tracker() {
         <div className="milestone-roadmap" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
           <h3 style={{ fontSize: '1.25rem', color: '#ec4899', marginBottom: '1rem' }}>Your Journey Milestones</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <li style={{ opacity: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🎟️</span> <strong>10-Day Perfect Streak:</strong> Earns 1 Free Pass (consumed automatically on Zero Days).
+            </li>
             <li style={{ opacity: completedCount >= 15 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span>{completedCount >= 15 ? '✅' : '🔒'}</span> <strong>15 Days of Momentum:</strong> Unlocks the Sprout Mascot.
             </li>
@@ -308,13 +327,14 @@ function Tracker() {
       <main className="days-grid">
         {daysArray.map((dayNum, index) => {
           const isCompleted = isDayCompleted(dayNum);
+          const isPassUsed = passUsedDays[dayNum];
           const isLocked = dayNum > activeCalendarDay;
           const isPast = dayNum < activeCalendarDay;
           
           return (
             <div 
               key={dayNum} 
-              className={`day-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${dayNum === activeCalendarDay ? 'active' : ''}`}
+              className={`day-card ${isCompleted || isPassUsed ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${dayNum === activeCalendarDay ? 'active' : ''}`}
               onClick={() => handleDayClick(dayNum)}
               style={{ 
                 animationDelay: `${(index % 10) * 0.05}s`,
@@ -330,8 +350,8 @@ function Tracker() {
                   <div className="day-card-overlay"></div>
                   <div className="day-card-content">
                     <div className="day-number">{dayNum}</div>
-                    <div className="day-status">
-                      {isLocked ? 'Locked' : (isPast ? 'Past' : (isCompleted ? 'Completed' : 'Pending'))}
+                    <div className="day-status" style={{ color: isPassUsed ? '#fcd34d' : '', fontWeight: isPassUsed ? 'bold' : 'normal' }}>
+                      {isLocked ? 'Locked' : (isPassUsed ? 'Pass Used' : (isPast ? (isCompleted ? 'Completed' : 'Missed') : (isCompleted ? 'Completed' : 'Pending')))}
                     </div>
                   </div>
                 </div>
@@ -462,7 +482,7 @@ function Tracker() {
           <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'center', background: '#111827', border: '2px solid #ef4444', boxShadow: '0 0 50px rgba(239, 68, 68, 0.3)' }}>
             <h2 style={{ fontSize: '3rem', color: '#ef4444', marginBottom: '1rem', fontWeight: '900', textTransform: 'uppercase' }}>Chain Broken</h2>
             <p style={{ fontSize: '1.2rem', color: 'white', marginBottom: '2rem', lineHeight: '1.6' }}>
-              You had a zero-day on <strong>Day {failedDay}</strong>. The Non-Zero Rule is absolute. The universe doesn't pause, and neither does the calendar.
+              You had a zero-day on <strong>Day {failedDay}</strong>, and you had <strong>0 Free Passes</strong> left to save you. The universe doesn't pause, and neither does the calendar.
             </p>
             <button 
               onClick={handleStartOver}

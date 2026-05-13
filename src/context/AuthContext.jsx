@@ -215,7 +215,7 @@ export const AuthProvider = ({ children }) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode, timezone })
+        .upsert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode, timezone }, { onConflict: 'user_id' })
         .select()
         .single();
         
@@ -223,7 +223,7 @@ export const AuthProvider = ({ children }) => {
       setUserProfile(data);
     } catch (error) {
       console.error('Error starting challenge:', error);
-      alert('Failed to start challenge. Please try again.');
+      alert('Failed to start challenge: ' + (error.message || JSON.stringify(error)));
     }
   };
 

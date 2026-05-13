@@ -68,8 +68,8 @@ export const AuthProvider = ({ children }) => {
           { id: 'rule1', label: 'Do one scary or difficult task before you feel ready', sort_order: 1 },
           { id: 'rule2', label: 'Execute your daily discipline with zero motivation', sort_order: 2 },
           { id: 'rule3', label: 'Read 10 pages or listen to The Momentum Series', sort_order: 3 },
-          { id: 'rule4', label: '10 minutes of journaling/reflection', sort_order: 4 },
-          { id: 'rule5', label: 'Catch and eliminate "When I..." statements', sort_order: 5 }
+          { id: 'rule4', label: '10 minutes of journaling/reflection (e.g., write down one win and one lesson from today)', sort_order: 4 },
+          { id: 'rule5', label: 'Examine the excuses you used today that held you back, and write down how you will overcome them tomorrow', sort_order: 5 }
         ];
         setCustomRules(defaultRules);
       }

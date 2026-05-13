@@ -161,13 +161,14 @@ function Tracker() {
 
     if (anyNowDone && !wasAnyDone) {
       playChime();
+      
+      // Select a random quote
+      const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+      setQuoteModal({ show: true, quote: randomQuote });
     }
     
     if (allNowDone && !wasDone) {
       playChime();
-      
-      // Select a random quote
-      const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
       
       if (selectedDay === 60) {
         var duration = 3000;
@@ -356,7 +357,7 @@ function Tracker() {
                 disabled={isGeneratingShare}
                 style={{ background: 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899', color: '#ec4899', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold', opacity: isGeneratingShare ? 0.5 : 1 }}
               >
-                {isGeneratingShare ? 'Generating...' : 'Share to IG'}
+                {isGeneratingShare ? 'Generating...' : 'Share 📸 (IG/TikTok/FB)'}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 export const motivationalQuotes = [
+  // Original Phase Quotes
   "Do one scary or difficult task before you feel ready.",
   "Execute your committed daily discipline, even with zero motivation. That is the 'But I Will' habit.",
   "Catch and eliminate any thought that delays living until conditions are perfect. Zero 'When I...' statements.",
@@ -18,5 +19,36 @@ export const motivationalQuotes = [
   "The only way to build momentum is to push through the initial friction.",
   "Your future self is forged in the fires of today's discipline.",
   "Stop waiting for permission to become who you are meant to be.",
-  "You showed up today. That is where clarity starts."
+  "You showed up today. That is where clarity starts.",
+  // Extracted Quotes from The Momentum Series PDFs
+  "Your Body Is Not Your Soul — can I live aligned, even when I’m judged?",
+  "It doesn’t get to set the temperature for your day.",
+  "To stay fully present in a situation where presence was the only thing available and the only thing required.",
+  "Maybe it's Sunday night, and you're staring at your inbox like it personally wronged you.",
+  "Decisions you made once so you don't have to make them every day while your feelings throw a tantrum.",
+  "They end because you keep yourself alive inside them long enough to reach the other side.",
+  "People who understood the argument for continuing and still couldn't move.",
+  "Decide you need a brand-new system, identity, or personality.",
+  "When your behaviour changes, belief shows up fashionably late, acting like it was invited all along.",
+  "One forward day does not require clarity, confidence, or a better personality.",
+  "That you knew it every time you stood just out of frame going: that’s not me.",
+  "But the default was never “write a chapter.” The default was “open the laptop.” That’s embarrassingly small.",
+  "Even if showing up looks like opening one tab and staring at it blankly for three minutes before closing it again.",
+  "Experts are not substantially better at this than novices.",
+  "They scroll until their brains turn into a digital smoothie, hoping someone else's inspiration will jumpstart theirs.",
+  "The Latin root of determination is determinare, to fix the boundary.",
+  "You can spend three weeks organising your notes and colour-coding your dreams, but you’re just avoiding the part where things get real.",
+  "In truth, I was only falling behind a timeline created by comparing my actions to others’ captions.",
+  "Because motivation is a con artist with great lighting and absolutely no follow-through.",
+  "Here is what the flat feeling looks like from the inside.",
+  "They get stuck because meaning is the last acceptable excuse not to move.",
+  "There is a more basic question before any of that.",
+  "And if the weight you’re carrying has a clinical heaviness to it, weeks, not days, please reach for support.",
+  "It leaves you standing there wondering what you did wrong.",
+  "A flag in the ground that points in one direction and says: look how long determination can hold.",
+  "You decide confidence was never yours to begin with.",
+  "And what you built has your fingerprints all over it.",
+  "Restarting doesn't mean returning to your peak performance.",
+  "Determination is the thing that is still standing when everything elegant has left.",
+  "A declaration is a statement of fact about something that is going to be true from this point forward, regardless of whether you feel it yet."
 ];

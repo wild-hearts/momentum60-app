@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import InstallPWA from './components/InstallPWA';
 import Navbar from './pages/Navbar';
 import Landing from './pages/Landing';
 import Tracker from './pages/Tracker';
@@ -23,6 +24,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <InstallPWA />
       <Navbar />
       <Routes>
         {/* Public Routes */}

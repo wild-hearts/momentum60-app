@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
+import { toJpeg } from 'html-to-image';
 import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { motivationalQuotes } from '../data/quotes';
@@ -19,6 +20,11 @@ function Tracker() {
   const [songTopic, setSongTopic] = useState('');
   const [hasFailed, setHasFailed] = useState(false);
   const [failedDay, setFailedDay] = useState(null);
+  const [onboardingStep, setOnboardingStep] = useState(1);
+  const [contractName, setContractName] = useState('');
+  const [contractAgreed, setContractAgreed] = useState(false);
+  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
+  const shareCardRef = React.useRef(null);
 
   const isDayCompleted = (dayNum) => {
     const dayData = userData[dayNum];
@@ -115,6 +121,9 @@ function Tracker() {
     setSelectedDay(null);
     setHasFailed(false);
     setFailedDay(null);
+    setOnboardingStep(1);
+    setContractName('');
+    setContractAgreed(false);
   };
 
   const handleDayClick = (dayNum) => {
@@ -181,11 +190,88 @@ function Tracker() {
 
   const daysArray = Array.from({ length: 60 }, (_, i) => i + 1);
 
+  const handleShare = async () => {
+    if (!shareCardRef.current) return;
+    try {
+      setIsGeneratingShare(true);
+      const dataUrl = await toJpeg(shareCardRef.current, { quality: 0.95, backgroundColor: '#0f172a' });
+      
+      // If mobile device, try using Web Share API
+      if (navigator.share) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], 'momentum-streak.jpg', { type: 'image/jpeg' });
+          await navigator.share({
+            title: 'Momentum 60 Streak',
+            text: 'I am building unstoppable momentum. Join the non-zero challenge.',
+            files: [file]
+          });
+          setIsGeneratingShare(false);
+          return;
+        } catch (e) {
+          console.log('Web share failed, falling back to download', e);
+        }
+      }
+      
+      // Fallback: trigger download
+      const link = document.createElement('a');
+      link.download = 'momentum-streak.jpg';
+      link.href = dataUrl;
+      link.click();
+      setIsGeneratingShare(false);
+    } catch (error) {
+      console.error('Failed to generate image', error);
+      setIsGeneratingShare(false);
+    }
+  };
+
   if (!userProfile) {
+    if (onboardingStep === 1) {
+      return (
+        <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>The Commitment</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6', textAlign: 'left' }}>
+              I agree that perfection is a trap. I agree that doing nothing is no longer acceptable. I commit to the Non-Zero Rule: I will complete at least one small task every single day for the next 60 days to keep my momentum alive.
+            </p>
+            
+            <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Type your full name to sign digitally:</label>
+              <input 
+                type="text" 
+                value={contractName}
+                onChange={(e) => setContractName(e.target.value)}
+                placeholder="First Last"
+                style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(236,72,153,0.5)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1.2rem', fontFamily: 'monospace' }}
+              />
+            </div>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', cursor: 'pointer', textAlign: 'left' }}>
+              <input 
+                type="checkbox" 
+                checked={contractAgreed} 
+                onChange={(e) => setContractAgreed(e.target.checked)} 
+                style={{ width: '24px', height: '24px', accentColor: '#ec4899' }}
+              />
+              <span style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>I accept the terms and I am ready to begin.</span>
+            </label>
+            
+            <button 
+              onClick={() => { playClick(); setOnboardingStep(2); }}
+              disabled={!contractAgreed || contractName.trim() === ''}
+              style={{ width: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '1rem', border: 'none', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: (!contractAgreed || contractName.trim() === '') ? 'not-allowed' : 'pointer', opacity: (!contractAgreed || contractName.trim() === '') ? 0.5 : 1 }}
+            >
+              Sign Contract
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Welcome to Momentum 60</h1>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Accountability Mode</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6' }}>
             Before we lock in your starting clock, choose your accountability mode. This decides how you prove your daily progress.
           </p>
@@ -257,13 +343,22 @@ function Tracker() {
           <div className="progress-bar-container">
             <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
           </div>
-          <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
             <span>{completedCount} of 60 Days Completed</span>
-            <span style={{ color: '#ec4899', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
-              <span style={{ margin: '0 0.5rem', color: 'rgba(255,255,255,0.3)' }}>|</span>
-              🎟️ Free Passes: {passesAvailable}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ color: '#ec4899', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
+                <span style={{ margin: '0 0.5rem', color: 'rgba(255,255,255,0.3)' }}>|</span>
+                🎟️ Free Passes: {passesAvailable}
+              </span>
+              <button 
+                onClick={handleShare}
+                disabled={isGeneratingShare}
+                style={{ background: 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899', color: '#ec4899', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold', opacity: isGeneratingShare ? 0.5 : 1 }}
+              >
+                {isGeneratingShare ? 'Generating...' : 'Share to IG'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -562,6 +657,33 @@ function Tracker() {
           </div>
         </div>
       )}
+
+      {/* Hidden Share Card used for HTML-to-Image */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <div ref={shareCardRef} style={{ width: '1080px', height: '1920px', background: 'radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', padding: '4rem', boxSizing: 'border-box', fontFamily: '"Inter", sans-serif' }}>
+          <h1 style={{ fontSize: '6rem', color: '#ec4899', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Momentum 60</h1>
+          <div style={{ fontSize: '3.5rem', marginBottom: '4rem', color: 'rgba(255,255,255,0.8)' }}>I am building unstoppable momentum.</div>
+          
+          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '5rem', borderRadius: '32px', border: '4px solid #ec4899', textAlign: 'center', width: '80%', boxShadow: '0 0 100px rgba(236,72,153,0.3)' }}>
+            <div style={{ fontSize: '8rem', marginBottom: '1rem' }}>🔥</div>
+            <div style={{ fontSize: '10rem', fontWeight: '900', color: '#10b981', lineHeight: '1' }}>{currentPerfectStreak}</div>
+            <div style={{ fontSize: '3rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem', color: 'rgba(255,255,255,0.9)' }}>Day Perfect Streak</div>
+          </div>
+          
+          <div style={{ marginTop: '5rem', display: 'flex', gap: '2rem' }}>
+            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '2rem', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
+              <div style={{ fontSize: '2.5rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Days Completed</div>
+              <div style={{ fontSize: '4rem', fontWeight: 'bold', color: 'white' }}>{completedCount} / 60</div>
+            </div>
+            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '2rem', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
+              <div style={{ fontSize: '2.5rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Current Mascot</div>
+              <div style={{ fontSize: '4rem', fontWeight: 'bold', color: 'white' }}>{completedCount >= 60 ? '🦅 Phoenix' : (completedCount >= 30 ? '🌳 Sapling' : (completedCount >= 15 ? '🌱 Sprout' : '🥚 Egg'))}</div>
+            </div>
+          </div>
+          
+          <div style={{ position: 'absolute', bottom: '4rem', fontSize: '2.5rem', color: 'rgba(255,255,255,0.5)' }}>challenge.themomentumrule.com</div>
+        </div>
+      </div>
     </div>
   );
 }

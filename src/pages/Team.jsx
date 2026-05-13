@@ -1,14 +1,41 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Users, Copy, CheckCircle } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { Users, Copy, CheckCircle, Flame } from 'lucide-react';
 import './Landing.css';
 
 function Team() {
-  const { user, inviteCode, teamMember, linkTeamMember, unlinkTeamMember } = useContext(AuthContext);
+  const { user, inviteCode, teamMember, linkTeamMember, unlinkTeamMember, userData } = useContext(AuthContext);
   const [friendCode, setFriendCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [linkMessage, setLinkMessage] = useState({ type: '', text: '' });
   const [isLinking, setIsLinking] = useState(false);
+  const [partnerProgress, setPartnerProgress] = useState(null);
+
+  // Calculate user's own progress
+  let myCompletedCount = 0;
+  for (let i = 1; i <= 60; i++) {
+    const dayData = userData[i];
+    if (dayData && Object.keys(dayData).length > 0) {
+      myCompletedCount++;
+    }
+  }
+
+  useEffect(() => {
+    const fetchPartnerProgress = async () => {
+      if (teamMember && user) {
+        try {
+          const { data, error } = await supabase.rpc('get_partner_progress');
+          if (!error) {
+            setPartnerProgress(data);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+    fetchPartnerProgress();
+  }, [teamMember, user]);
 
   if (!user) {
     return (
@@ -74,7 +101,34 @@ function Team() {
               <div>
                 <p style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle size={20} /> Successfully linked!</p>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>You are now teamed up and holding each other accountable.</p>
-                <button onClick={unlinkTeamMember} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>
+                
+                {partnerProgress !== null && (
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#ec4899' }}><Flame size={20} /> Head-to-Head</h4>
+                    
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                        <span>You</span>
+                        <strong>{myCompletedCount} Days</strong>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${(myCompletedCount/60)*100}%`, height: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                        <span>Partner</span>
+                        <strong>{partnerProgress} Days</strong>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${(partnerProgress/60)*100}%`, height: '100%', background: '#10b981' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <button onClick={unlinkTeamMember} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', width: '100%' }}>
                   Unlink Account
                 </button>
               </div>

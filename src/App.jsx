@@ -43,6 +43,9 @@ function App() {
         <Route path="/rules" element={<ProtectedRoute><CustomRules /></ProtectedRoute>} />
         <Route path="/summary" element={<ProtectedRoute><JourneySummary /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        
+        {/* Catch-all redirect to Home */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );

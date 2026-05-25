@@ -12,6 +12,7 @@ import Insights from './pages/Insights';
 import CustomRules from './pages/CustomRules';
 import JourneySummary from './pages/JourneySummary';
 import Settings from './pages/Settings';
+import Tools from './pages/Tools';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/books" element={<Books />} />
+        <Route path="/tools" element={<Tools />} />
         <Route path="/auth" element={<Auth />} />
         
         {/* Protected Routes */}

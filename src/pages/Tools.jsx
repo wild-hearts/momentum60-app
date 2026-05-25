@@ -8,37 +8,33 @@ function Tools() {
       title: 'Cheat Sheets',
       description: 'Quick reference guides to keep you on track when the friction is high. Print these out and stick them somewhere visible.',
       icon: '📝',
-      comingSoon: true
+      url: '/downloads/cheat_sheets.html'
     },
     {
       id: 'starter-kit',
       title: 'Starter Kit',
       description: 'Everything you need to set up your environment for the Momentum 60 challenge. Remove the guesswork and start moving.',
       icon: '🚀',
-      comingSoon: true
+      url: '/downloads/starter_kit.html'
     },
     {
       id: 'self-assessment',
       title: 'Self Assessment',
       description: 'A brutally honest diagnostic tool to identify where you are leaking energy and how to plug the holes.',
       icon: '🔍',
-      comingSoon: true
+      url: '/downloads/self_assessment.html'
     },
     {
       id: 'printable-calendar',
       title: 'Printable Calendar',
       description: 'A physical 60-day visual tracker. Cross off the days with a red marker to build an unbreakable physical chain.',
       icon: '📅',
-      comingSoon: true
+      url: '/downloads/printable_calendar.html'
     }
   ];
 
   const handleDownload = (tool) => {
-    if (tool.comingSoon) {
-      alert(`The ${tool.title} is currently being finalised and will be available to download shortly!`);
-    } else {
-      // Future: window.open(tool.url, '_blank');
-    }
+    window.open(tool.url, '_blank');
   };
 
   return (
@@ -91,7 +87,7 @@ function Tools() {
               onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              {tool.comingSoon ? 'Coming Soon' : 'Download Now'}
+              {tool.title ? 'Download PDF' : 'Download Now'}
             </button>
           </div>
         ))}

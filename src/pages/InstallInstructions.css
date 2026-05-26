@@ -1,0 +1,64 @@
+.install-container {
+  padding: 4rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text-primary);
+}
+
+.install-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-align: center;
+}
+
+.install-intro {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.install-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .install-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.install-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.install-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #ec4899;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.install-card ol {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.install-card li {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.install-card li strong {
+  color: #fff;
+}

@@ -13,6 +13,7 @@ import CustomRules from './pages/CustomRules';
 import JourneySummary from './pages/JourneySummary';
 import Settings from './pages/Settings';
 import Tools from './pages/Tools';
+import InstallInstructions from './pages/InstallInstructions';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/books" element={<Books />} />
         <Route path="/tools" element={<Tools />} />
+        <Route path="/install" element={<InstallInstructions />} />
         <Route path="/auth" element={<Auth />} />
         
         {/* Protected Routes */}

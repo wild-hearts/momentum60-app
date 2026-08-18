@@ -35,9 +35,11 @@ function Navbar() {
         <li>
           <Link to="/tools" className={location.pathname === '/tools' ? 'active' : ''}>Tools</Link>
         </li>
-        <li>
-          <Link to="/install" className={location.pathname === '/install' ? 'active' : ''}>Install App</Link>
-        </li>
+        {!window.Capacitor?.isNativePlatform?.() && (
+          <li>
+            <Link to="/install" className={location.pathname === '/install' ? 'active' : ''}>Install App</Link>
+          </li>
+        )}
         {user ? (
           <>
             <li>

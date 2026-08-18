@@ -9,8 +9,8 @@ function InstallPWA() {
   const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
-    // Check if it's already installed (standalone mode)
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    // Check if it's already installed (standalone mode) or running inside the native Capacitor shell
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.Capacitor?.isNativePlatform?.()) {
       setIsStandalone(true);
       return;
     }

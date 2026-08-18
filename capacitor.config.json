@@ -1,0 +1,9 @@
+{
+  "appId": "com.themomentumrule.momentum60",
+  "appName": "Momentum 60",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "always"
+  },
+  "backgroundColor": "#111827"
+}

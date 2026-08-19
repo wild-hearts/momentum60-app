@@ -14,6 +14,7 @@ import JourneySummary from './pages/JourneySummary';
 import Settings from './pages/Settings';
 import Tools from './pages/Tools';
 import InstallInstructions from './pages/InstallInstructions';
+import UpdatePassword from './pages/UpdatePassword';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/tools" element={<Tools />} />
         <Route path="/install" element={<InstallInstructions />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
         
         {/* Protected Routes */}
         <Route path="/app" element={<ProtectedRoute><Tracker /></ProtectedRoute>} />

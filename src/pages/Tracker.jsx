@@ -247,15 +247,18 @@ function Tracker() {
               />
             </div>
             
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', cursor: 'pointer', textAlign: 'left' }}>
-              <input 
-                type="checkbox" 
-                checked={contractAgreed} 
-                onChange={(e) => setContractAgreed(e.target.checked)} 
-                style={{ width: '24px', height: '24px', accentColor: '#ec4899' }}
-              />
+            <div
+              role="checkbox"
+              aria-checked={contractAgreed}
+              tabIndex={0}
+              onClick={() => { playClick(); setContractAgreed(!contractAgreed); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', cursor: 'pointer', textAlign: 'left' }}
+            >
+              <div style={{ width: '28px', height: '28px', minWidth: '28px', borderRadius: '6px', border: '2px solid #ec4899', background: contractAgreed ? '#ec4899' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', transition: 'background 0.15s' }}>
+                {contractAgreed ? '\u2713' : ''}
+              </div>
               <span style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>I accept the terms and I am ready to begin.</span>
-            </label>
+            </div>
             
             <button 
               onClick={() => { playClick(); setOnboardingStep(2); }}

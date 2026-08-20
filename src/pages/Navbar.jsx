@@ -8,6 +8,11 @@ function Navbar() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
+  // Marketing links (FAQ / Books / Tools / Install) only appear on the public pages,
+  // never inside the app screens. The brand logo always links Home.
+  const marketingPages = ['/', '/faq', '/books', '/tools', '/install'];
+  const showMarketingLinks = marketingPages.includes(location.pathname);
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -23,22 +28,26 @@ function Navbar() {
         <Link to="/">Momentum 60</Link>
       </div>
       <ul className="navbar-links">
-        <li>
-          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-        </li>
-        <li>
-          <Link to="/faq" className={location.pathname === '/faq' ? 'active' : ''}>FAQ</Link>
-        </li>
-        <li>
-          <Link to="/books" className={location.pathname === '/books' ? 'active' : ''}>The Books</Link>
-        </li>
-        <li>
-          <Link to="/tools" className={location.pathname === '/tools' ? 'active' : ''}>Tools</Link>
-        </li>
-        {!window.Capacitor?.isNativePlatform?.() && (
-          <li>
-            <Link to="/install" className={location.pathname === '/install' ? 'active' : ''}>Install App</Link>
-          </li>
+        {showMarketingLinks && (
+          <>
+            <li>
+              <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+            </li>
+            <li>
+              <Link to="/faq" className={location.pathname === '/faq' ? 'active' : ''}>FAQ</Link>
+            </li>
+            <li>
+              <Link to="/books" className={location.pathname === '/books' ? 'active' : ''}>The Books</Link>
+            </li>
+            <li>
+              <Link to="/tools" className={location.pathname === '/tools' ? 'active' : ''}>Tools</Link>
+            </li>
+            {!window.Capacitor?.isNativePlatform?.() && (
+              <li>
+                <Link to="/install" className={location.pathname === '/install' ? 'active' : ''}>Install App</Link>
+              </li>
+            )}
+          </>
         )}
         {user ? (
           <>

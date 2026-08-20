@@ -59,13 +59,12 @@ function Settings() {
               </h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Receive an email if you haven't completed your daily task.</p>
             </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}>
-              <input 
-                type="checkbox" 
-                checked={reminderEnabled} 
-                onChange={(e) => setReminderEnabled(e.target.checked)} 
-                style={{ opacity: 0, width: 0, height: 0 }} 
-              />
+            <label
+              role="switch"
+              aria-checked={reminderEnabled}
+              onClick={() => setReminderEnabled(!reminderEnabled)}
+              style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}
+            >
               <span style={{ 
                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
                 backgroundColor: reminderEnabled ? '#ec4899' : '#4b5563', transition: '.4s', borderRadius: '34px' 

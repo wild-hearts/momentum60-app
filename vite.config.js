@@ -8,6 +8,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Daily anthem MP3s (~190MB) are streamed on demand - never precached offline
+        globIgnores: ['songs/**'],
+      },
       devOptions: {
         enabled: true
       },

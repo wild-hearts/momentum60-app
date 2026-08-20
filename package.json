@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "ios:sync": "vite build && cap copy ios && rm -rf ios/App/App/public/songs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

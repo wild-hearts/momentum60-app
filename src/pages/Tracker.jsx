@@ -5,7 +5,7 @@ import { toJpeg } from 'html-to-image';
 import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { motivationalQuotes } from '../data/quotes';
-import { dailySongs } from '../data/songs';
+import { dailySongs, SONGS_BASE_URL } from '../data/songs';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
 import './Tracker.css';
@@ -489,16 +489,20 @@ function Tracker() {
 
             <div className="daily-anthem-section" style={{ marginBottom: '2rem' }}>
               <h3 style={{ fontSize: '1.1rem', color: '#8b5cf6', marginBottom: '0.5rem', textAlign: 'left', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Anthem:</h3>
-              <iframe 
-                style={{ borderRadius: '12px' }} 
-                src={`https://open.spotify.com/embed/track/${dailySongs[selectedDay - 1]}?utm_source=generator&theme=0`} 
-                width="100%" 
-                height="152" 
-                frameBorder="0" 
-                allowFullScreen="" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy"
-              ></iframe>
+              <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '12px', padding: '1rem', textAlign: 'left' }}>
+                <p style={{ margin: '0 0 0.75rem 0', color: 'var(--text-primary)', fontWeight: '700', fontSize: '1.05rem' }}>
+                  “{dailySongs[selectedDay - 1].title}”
+                </p>
+                <audio
+                  key={selectedDay}
+                  controls
+                  preload="none"
+                  style={{ width: '100%' }}
+                  src={`${SONGS_BASE_URL}/${dailySongs[selectedDay - 1].file}`}
+                >
+                  Your browser does not support audio playback.
+                </audio>
+              </div>
             </div>
 
             <h2 className="modal-task-title" style={{ marginBottom: '1.5rem', textAlign: 'left', fontSize: '1.25rem' }}>

@@ -1,80 +1,71 @@
-// This array holds 60 Spotify Track IDs, one for each day of the challenge.
-// To find a Track ID: Open Spotify, right-click a song -> Share -> Copy Song Link.
-// A link looks like this: https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
-// The ID is the random text after "/track/": 4cOdK2wGLETKBW3PvgPWqT
+// 60 daily anthem songs, one per challenge day.
+// Files live in public/songs/dayNN.mp3 - served by the website and STREAMED
+// (never bundled) by the native app. See SONGS_BASE_URL below.
 
-// I have filled these with the Day 1 track for now. You can replace them with the actual 60 track IDs from "The Winks" as you go.
-const PLACEHOLDER_ID = "5tsYOzDHNKmmsuPCnwnbKm"; 
+// The native iOS/Android app streams from the production site; the website uses same-origin paths.
+export const SONGS_BASE_URL = window.Capacitor?.isNativePlatform?.()
+  ? 'https://challenge.themomentumrule.com/songs'
+  : '/songs';
 
 export const dailySongs = [
-  "5tsYOzDHNKmmsuPCnwnbKm", // Day 1
-  "5WmSVAl88eO5yhMn4rDfMk", // Day 2
-  "3AWnsk0WFiu7hyEnbnK2Fs", // Day 3
-  "0NDhaRzGmlXMcACR80hqjV", // Day 4
-  "05elIJBH1WEnf6azmY7lds", // Day 5
-  "7AnheOTH7WsZGvIZ7gbfPW", // Day 6
-  "3KqJb8TNubRQpLQeGXy2KE", // Day 7
-  "2CDwrcTbzeHH3nb9T18dMz", // Day 8
-  "3hikJmQrtd5dtDpEXVPvVM", // Day 9
-  "4RN16d4LOSD4n0etHNQOUh", // Day 10
-  "1V2w7DSWtqs5oqcP7uCLiP", // Day 11
-  "5hyJiuBOLmpvsxHwBJS3QF", // Day 12
-  "05IQ4M1YJFHX673w5KSA4k", // Day 13
-  "5GnjW8BATPkkXa0BziCpuT", // Day 14
-  "3y4Ln80zTypD1sXfkqrzKF", // Day 15
-  "0RsbL2k4qh8jBdpWTdvfvA", // Day 16
-  "2OUbiboMeTMhJglCXXtReL", // Day 17
-  "62cv9wPkqTG8gu46pXo7xJ", // Day 18
-  "4kFbUt8U5IL1HSmHhoytXt", // Day 19
-  "7hsOgM45TNaWRaQV7nR5xf", // Day 20
-  "3xVmrR7jrLCoQ0R4OKPU5S", // Day 21
-  "7FxgmaO0rd91kek3wceoiF", // Day 22
-  "1oE85sFvyhpbzGTHIwgLdf", // Day 23
-  "7wn6CTaBPBId6Rv9Ztqf8L", // Day 24
-  "502OM7CMsXS3blWEWtEqxF", // Day 25
-  "1YWxcOyRqwC5mDs0kWX5Ft", // Day 26
-  "1rWq654fNtajKzUcAxJSVQ", // Day 27
-  "75hj1Lery6HKmwqo5Q19QN", // Day 28
-  "0Os101iAiuNVWaXjYFpF4S", // Day 29
-  "7L5xrS8jxo4eGuSLkIrfRN", // Day 30
-  "1UJdiU12sya29xPbjXrbdM", // Day 31
-  "4qXxySjoxgdbyxqKyGpXpj", // Day 32
-  "3PLCX0GqVa1xQYfOWhmRmg", // Day 33
-  "06WGGXsCKk9qd7jY67neQh", // Day 34
-  "1iAJGTpNOpuOIEgXhYskPL", // Day 35
-  "4iBrJgw9ysbGLYxctBQEJ1", // Day 36
-  "1UEso9Uthc63IlYZpAB1O8", // Day 37
-  "1ebLBqI8O9JbWBvHT22hYs", // Day 38
-  "4hoqiMZfFQzSzlYxnAnH6g", // Day 39
-  "1tqUsmhEyINLVxtoYdJIDO", // Day 40
-  "0l8LqZa1a1ZC0R3lqmI2aM", // Day 41
-  "02dstEsK66TD3pYiX49E1P", // Day 42
-  "1Abh2HGMTua7mQHZbBFrbl", // Day 43
-  "07NXmwmZBwU0Tc20otGebZ", // Day 44
-  "0YywsEIh0L9ZyL6VWJ6a0x", // Day 45
-  "7cZ79tGSMzpEgyawQEOtTb", // Day 46
-  "43R7kl42M4Sx5h5TJjuKGt", // Day 47
-  "0tT5UpWYn4smxZd8r9BiHM", // Day 48
-  "6pr3eTothnJHm15k17V0gT", // Day 49
-  "7vAoz62x6QK2SKXTO6wnhz", // Day 50
-  "7BqNtiu6kOeMyhod34FzaC", // Day 51
-  "7n1kDnMd3wJhTHlb7kfotR", // Day 52
-  "1n25ShUKNIkwEBPBSinCAu", // Day 53
-  "0nxKboRX4bSu6vxx72zIA6", // Day 54
-  "1hKlCug3FT0qt9unQMkWqo", // Day 55
-  "3oB1S083qnXaqsRlKm1dGs", // Day 56
-  "5lhE9LJ9eFiTtvNnG1eQzz", // Day 57
-  "6Yb4WGuuDgNWdbfub0vnAB", // Day 58
-  "70q6dqnInGYNedv7SMrEOl", // Day 59
-  "1YWxcOyRqwC5mDs0kWX5Ft" // Day 60
+  { file: 'day01.mp3', title: 'Today Is My Day' }, // Day 1
+  { file: 'day02.mp3', title: 'I Choose Today' }, // Day 2
+  { file: 'day03.mp3', title: 'Grateful For This Moment' }, // Day 3
+  { file: 'day04.mp3', title: 'Energy Flows Through Me' }, // Day 4
+  { file: 'day05.mp3', title: 'Nothing Can Stop Me' }, // Day 5
+  { file: 'day06.mp3', title: 'I Am Capable' }, // Day 6
+  { file: 'day07.mp3', title: 'My Mind Is Powerful' }, // Day 7
+  { file: 'day08.mp3', title: 'Confidence Is My Choice' }, // Day 8
+  { file: 'day09.mp3', title: 'The Best Is Coming' }, // Day 9
+  { file: 'day10.mp3', title: 'I Am Becoming' }, // Day 10
+  { file: 'day11.mp3', title: 'I Deserve Good Things' }, // Day 11
+  { file: 'day12.mp3', title: 'I Release The Past' }, // Day 12
+  { file: 'day13.mp3', title: 'I Am Worthy' }, // Day 13
+  { file: 'day14.mp3', title: 'My New Beginning' }, // Day 14
+  { file: 'day15.mp3', title: 'I Choose Happiness' }, // Day 15
+  { file: 'day16.mp3', title: 'I Control My Thoughts' }, // Day 16
+  { file: 'day17.mp3', title: 'I Am Focused' }, // Day 17
+  { file: 'day18.mp3', title: 'Discipline Creates Freedom' }, // Day 18
+  { file: 'day19.mp3', title: 'I Keep My Promises To Myself' }, // Day 19
+  { file: 'day20.mp3', title: 'I Trust Myself' }, // Day 20
+  { file: 'day21.mp3', title: 'I Am Resilient' }, // Day 21
+  { file: 'day22.mp3', title: 'Challenges Make Me Stronger' }, // Day 22
+  { file: 'day23.mp3', title: 'I Have Nothing To Prove' }, // Day 23
+  { file: 'day24.mp3', title: 'I Am Calm Under Pressure' }, // Day 24
+  { file: 'day25.mp3', title: 'I Choose Courage' }, // Day 25
+  { file: 'day26.mp3', title: 'I Am A Problem Solver' }, // Day 26
+  { file: 'day27.mp3', title: 'I Take Action' }, // Day 27
+  { file: 'day28.mp3', title: 'I Believe In My Decisions' }, // Day 28
+  { file: 'day29.mp3', title: 'I Am Creating My Future' }, // Day 29
+  { file: 'day30.mp3', title: 'My Possibilities Are Endless' }, // Day 30
+  { file: 'day31.mp3', title: 'I Celebrate My Journey' }, // Day 31
+  { file: 'day32.mp3', title: 'I Own My Voice' }, // Day 32
+  { file: 'day33.mp3', title: 'I Am Fearless' }, // Day 33
+  { file: 'day34.mp3', title: 'I Take Up Space' }, // Day 34
+  { file: 'day35.mp3', title: 'I Trust My Instincts' }, // Day 35
+  { file: 'day36.mp3', title: 'I Am A Leader' }, // Day 36
+  { file: 'day37.mp3', title: 'I Am Brave' }, // Day 37
+  { file: 'day38.mp3', title: 'I Speak With Confidence' }, // Day 38
+  { file: 'day39.mp3', title: 'I Set Healthy Boundaries' }, // Day 39
+  { file: 'day40.mp3', title: 'I Respect Myself' }, // Day 40
+  { file: 'day41.mp3', title: 'I Am Unstoppable' }, // Day 41
+  { file: 'day42.mp3', title: 'I Am Limitless' }, // Day 42
+  { file: 'day43.mp3', title: 'I Believe In My Dreams' }, // Day 43
+  { file: 'day44.mp3', title: 'I Am Proud Of Myself' }, // Day 44
+  { file: 'day45.mp3', title: 'I Am Building My Dreams' }, // Day 45
+  { file: 'day46.mp3', title: 'My Future Is Bright' }, // Day 46
+  { file: 'day47.mp3', title: 'I Achieve My Goals' }, // Day 47
+  { file: 'day48.mp3', title: 'I Celebrate My Wins' }, // Day 48
+  { file: 'day49.mp3', title: 'I Am Living My Potential' }, // Day 49
+  { file: 'day50.mp3', title: 'I Am The Person I Was Waiting For' }, // Day 50
+  { file: 'day51.mp3', title: 'I Live With Purpose' }, // Day 51
+  { file: 'day52.mp3', title: 'I Trust My Journey' }, // Day 52
+  { file: 'day53.mp3', title: 'I Am Aligned' }, // Day 53
+  { file: 'day54.mp3', title: 'I Create My Reality' }, // Day 54
+  { file: 'day55.mp3', title: 'I Lead With Love' }, // Day 55
+  { file: 'day56.mp3', title: 'I Inspire Others' }, // Day 56
+  { file: 'day57.mp3', title: 'I Leave A Legacy' }, // Day 57
+  { file: 'day58.mp3', title: 'I Am Proud Of My Story' }, // Day 58
+  { file: 'day59.mp3', title: 'I Am Exactly Where I Need To Be' }, // Day 59
+  { file: 'day60.mp3', title: 'The Best Version Of Me' }, // Day 60
 ];
-
-// Example of how you would fill it out:
-/*
-export const dailySongs = [
-  "1x...", // Day 1
-  "2y...", // Day 2
-  "3z...", // Day 3
-  ...
-];
-*/

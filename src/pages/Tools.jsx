@@ -6,7 +6,7 @@ function Tools() {
     {
       id: 'cheat-sheets',
       title: 'Cheat Sheets',
-      description: 'Quick reference guides to keep you on track when the friction is high. Print these out and stick them somewhere visible.',
+      description: 'Quick reference guides to keep you on track when the friction is high. Print them out and stick them somewhere visible.',
       icon: '📝',
       url: '/downloads/cheat_sheets.html'
     },
@@ -33,7 +33,7 @@ function Tools() {
     }
   ];
 
-  const handleDownload = (tool) => {
+  const handleOpen = (tool) => {
     window.open(tool.url, '_blank');
   };
 
@@ -44,7 +44,7 @@ function Tools() {
           Tools to Keep You Moving
         </h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-          You don't have to rely on sheer willpower. Download these official Momentum Series tools to architect an environment where forward motion becomes the default.
+          You don't have to rely on sheer willpower. Open these official Momentum Series tools to architect an environment where forward motion becomes the default.
         </p>
       </header>
 
@@ -71,7 +71,7 @@ function Tools() {
               {tool.description}
             </p>
             <button 
-              onClick={() => handleDownload(tool)}
+              onClick={() => handleOpen(tool)}
               className="cta-button"
               style={{ 
                 background: 'transparent', 
@@ -87,7 +87,7 @@ function Tools() {
               onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              {tool.title ? 'Download PDF' : 'Download Now'}
+              Open and print
             </button>
           </div>
         ))}

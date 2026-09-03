@@ -21,7 +21,7 @@ export const motivationalQuotes = [
   "Stop waiting for permission to become who you are meant to be.",
   "You showed up today. That is where clarity starts.",
   // Extracted Quotes from The Momentum Series PDFs
-  "Your Body Is Not Your Soul — can I live aligned, even when I’m judged?",
+  "Your Body Is Not Your Soul. Can I live aligned, even when I’m judged?",
   "It doesn’t get to set the temperature for your day.",
   "To stay fully present in a situation where presence was the only thing available and the only thing required.",
   "Maybe it's Sunday night, and you're staring at your inbox like it personally wronged you.",

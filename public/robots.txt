@@ -1,0 +1,28 @@
+# Momentum 60 - challenge.themomentumrule.com
+# Added 3 September 2026. Before this file existed, vercel.json's catch-all
+# rewrite served the single page app's HTML for /robots.txt with a 200, so
+# every crawler that asked for the rules got a page of markup instead.
+
+User-agent: *
+Allow: /
+
+# Signed-in surfaces. Nothing here is reachable without an account, so a
+# crawler only ever gets the sign-in redirect. Keep them out of the index.
+Disallow: /app
+Disallow: /tracker
+Disallow: /team
+Disallow: /insights
+Disallow: /rules
+Disallow: /summary
+Disallow: /settings
+Disallow: /auth
+Disallow: /update-password
+
+# Build helper that ships inside public/ and is therefore served.
+Disallow: /downloads/convert.py
+
+# The 60 daily anthem MP3s are roughly 200 MB in total and are streamed on
+# demand, never precached. There is no reason for a crawler to pull them.
+Disallow: /songs/
+
+Sitemap: https://challenge.themomentumrule.com/sitemap.xml

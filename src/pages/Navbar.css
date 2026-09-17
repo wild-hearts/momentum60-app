@@ -61,3 +61,42 @@
 .landing-container, .app-container {
   padding-top: 5rem;
 }
+
+/* Phone widths, which is every native install and most of the web traffic.
+   The bar was built at desktop only: 3rem of side padding, a 1.5rem brand and
+   a single row of five links with 2rem gaps. At 393pt the brand and the links
+   sat on top of each other and the last link ran off the screen. Let the row
+   wrap, shrink everything, and pay for the extra height in the page offset.
+   The top inset keeps the bar clear of the notch on a real device. */
+@media (max-width: 700px) {
+  .navbar {
+    padding: 0.7rem 1rem;
+    padding-top: calc(0.7rem + env(safe-area-inset-top));
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .navbar-brand a {
+    font-size: 1.15rem;
+  }
+
+  .navbar-links {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem 1rem;
+    flex: 1;
+  }
+
+  .navbar-links a {
+    font-size: 0.85rem;
+  }
+
+  .navbar-links a.nav-cta {
+    padding: 0.35rem 0.9rem;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+  }
+
+  .landing-container, .app-container {
+    padding-top: 7.5rem;
+  }
+}

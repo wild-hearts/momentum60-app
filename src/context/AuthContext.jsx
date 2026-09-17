@@ -5,6 +5,34 @@ export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+/**
+ * A last-known-good copy of what the signed-in person has done, kept per user
+ * id so two accounts on one phone cannot see each other's streak. Written on
+ * every successful fetch, read only when a fetch fails.
+ */
+const SNAPSHOT_PREFIX = 'm60:snapshot:';
+
+function cacheSnapshot(userId, patch) {
+  if (!userId) return;
+  try {
+    const key = SNAPSHOT_PREFIX + userId;
+    const existing = JSON.parse(localStorage.getItem(key) || '{}');
+    localStorage.setItem(key, JSON.stringify({ ...existing, ...patch, at: Date.now() }));
+  } catch {
+    // Private browsing, or a full disk. Not worth breaking the app over.
+  }
+}
+
+function readSnapshot(userId) {
+  if (!userId) return null;
+  try {
+    const raw = localStorage.getItem(SNAPSHOT_PREFIX + userId);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,6 +40,7 @@ export const AuthProvider = ({ children }) => {
   // Data state
   const [customRules, setCustomRules] = useState([]);
   const [userData, setUserData] = useState({});
+  const [usingCachedData, setUsingCachedData] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [dailyReflections, setDailyReflections] = useState({});
   const [teamMember, setTeamMember] = useState(null);
@@ -91,6 +120,7 @@ export const AuthProvider = ({ children }) => {
       });
       
       setUserData(formattedData);
+      cacheSnapshot(userId, { userData: formattedData });
 
       // Fetch Profile
       const { data: profileData, error: profileError } = await supabase
@@ -101,6 +131,7 @@ export const AuthProvider = ({ children }) => {
       
       if (!profileError && profileData) {
         setUserProfile(profileData);
+        cacheSnapshot(userId, { userProfile: profileData });
         if (profileData.partner_id) {
           setTeamMember(profileData.partner_id);
         }
@@ -117,10 +148,22 @@ export const AuthProvider = ({ children }) => {
           formattedReflections[row.day_number] = row.content;
         });
         setDailyReflections(formattedReflections);
+        cacheSnapshot(userId, { dailyReflections: formattedReflections });
       }
 
     } catch (error) {
+      // Offline, or Supabase unreachable. A streak app that shows an empty
+      // grid when the train goes into a tunnel looks like it lost your
+      // progress, which is the one thing it must never look like. Fall back
+      // to the last good copy and carry on read-only.
       console.error('Error fetching user data:', error);
+      const cached = readSnapshot(userId);
+      if (cached) {
+        if (cached.userData) setUserData(cached.userData);
+        if (cached.userProfile) setUserProfile(cached.userProfile);
+        if (cached.dailyReflections) setDailyReflections(cached.dailyReflections);
+        setUsingCachedData(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -348,6 +391,7 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signOut,
+    usingCachedData,
     resetPassword,
     updatePassword,
     linkTeamMember,

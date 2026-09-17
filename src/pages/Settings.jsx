@@ -1,6 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Settings as SettingsIcon, Bell, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Globe, AlertTriangle } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import {
+  isNative,
+  requestPermission,
+  scheduleDailyReminder,
+  cancelDailyReminder,
+} from '../utils/notifications';
 import './Landing.css';
 
 function Settings() {
@@ -11,6 +18,10 @@ function Settings() {
   const [timezone, setTimezone] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [deleteText, setDeleteText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const native = isNative();
 
   useEffect(() => {
     if (userProfile) {
@@ -31,12 +42,60 @@ function Settings() {
       timezone: timezone
     });
     
+    // On the phone the reminder is a real notification held by iOS, so the
+    // save has to schedule or cancel it, not just record a preference.
+    let deviceNote = '';
+    if (native) {
+      if (reminderEnabled) {
+        const allowed = await requestPermission();
+        if (allowed) {
+          const ok = await scheduleDailyReminder(reminderTime);
+          deviceNote = ok
+            ? ` Your phone will nudge you at ${reminderTime}.`
+            : ' Saved, but the reminder could not be scheduled on this device.';
+        } else {
+          deviceNote =
+            ' Saved. Notifications are turned off for this app, so nothing will appear until you allow them in iOS Settings.';
+        }
+      } else {
+        await cancelDailyReminder();
+        deviceNote = ' Reminders on this device are off.';
+      }
+    }
+
     setIsSaving(false);
     if (success) {
-      setMessage('Settings saved successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage(`Settings saved.${deviceNote}`);
+      setTimeout(() => setMessage(''), 6000);
     } else {
       setMessage('Failed to save settings.');
+    }
+  };
+
+  /**
+   * Deleting the account. Apple requires this inside any app that lets people
+   * create one, and it is the right thing to offer regardless.
+   *
+   * The work happens in one Postgres function, delete_own_account, which runs
+   * as its owner and removes this user's rows from all four tables and then
+   * the login itself. Doing it that way means no service key has to exist
+   * anywhere near the app.
+   */
+  const handleDelete = async () => {
+    setDeleteError('');
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.rpc('delete_own_account');
+      if (error) throw error;
+      await cancelDailyReminder();
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch (e) {
+      console.error('account deletion failed', e);
+      setIsDeleting(false);
+      setDeleteError(
+        'That did not work. Nothing has been deleted. Email info@themomentumrule.com and it will be done by hand.'
+      );
     }
   };
 
@@ -57,7 +116,11 @@ function Settings() {
                 <Bell size={24} color="#ec4899" />
                 Daily Reminders
               </h3>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Receive an email if you haven't completed your daily task.</p>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                {native
+                  ? 'A nudge on this phone at the time you choose, even when the app is closed.'
+                  : "Receive an email if you haven't completed your daily task."}
+              </p>
             </div>
             <label
               role="switch"
@@ -114,6 +177,82 @@ function Settings() {
             {isSaving ? 'SAVING...' : 'SAVE SETTINGS'}
           </button>
         </form>
+
+        {/* Deleting the account. Apple requires this in any app with sign-up,
+            and the two-step confirmation is deliberate: sixty days of streak
+            should not be destroyable by one mis-tap. */}
+        <section
+          style={{
+            marginTop: '3rem',
+            padding: '2rem',
+            borderRadius: '16px',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            background: 'rgba(239, 68, 68, 0.06)',
+          }}
+        >
+          <h3
+            style={{
+              fontSize: '1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginTop: 0,
+              marginBottom: '0.75rem',
+            }}
+          >
+            <AlertTriangle size={20} color="#ef4444" />
+            Delete my account
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 0 }}>
+            This removes your login, your streak, your reflections and your custom
+            rules. It happens immediately and cannot be undone.
+          </p>
+          <label
+            htmlFor="delete-confirm"
+            style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '0.5rem' }}
+          >
+            Type DELETE to confirm
+          </label>
+          <input
+            id="delete-confirm"
+            type="text"
+            value={deleteText}
+            onChange={(e) => setDeleteText(e.target.value)}
+            autoComplete="off"
+            style={{
+              width: '100%',
+              padding: '0.9rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(0,0,0,0.5)',
+              color: 'white',
+              fontSize: '1rem',
+              marginBottom: '1rem',
+            }}
+          />
+          {deleteError && (
+            <p style={{ color: '#ef4444', fontWeight: 'bold' }}>{deleteError}</p>
+          )}
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteText !== 'DELETE' || isDeleting}
+            style={{
+              width: '100%',
+              padding: '1rem',
+              borderRadius: '999px',
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              color: 'white',
+              background: deleteText === 'DELETE' ? '#ef4444' : '#7f1d1d',
+              opacity: deleteText === 'DELETE' && !isDeleting ? 1 : 0.6,
+              cursor: deleteText === 'DELETE' && !isDeleting ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {isDeleting ? 'DELETING...' : 'DELETE MY ACCOUNT PERMANENTLY'}
+          </button>
+        </section>
       </div>
     </div>
   );

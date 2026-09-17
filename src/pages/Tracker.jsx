@@ -12,7 +12,7 @@ import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { user, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection } = useContext(AuthContext);
+  const { user, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
   const [rewardModal, setRewardModal] = useState(false);
@@ -302,6 +302,27 @@ function Tracker() {
 
   return (
     <div className="app-container">
+      {/* Shown only when the last load came from the cached copy, so a tunnel
+          or a dead wifi reads as "offline" rather than "your streak is gone". */}
+      {usingCachedData && (
+        <div
+          role="status"
+          style={{
+            maxWidth: '1000px',
+            margin: '0 auto 1.5rem',
+            padding: '0.85rem 1.25rem',
+            borderRadius: '12px',
+            background: 'rgba(250, 204, 21, 0.12)',
+            border: '1px solid rgba(250, 204, 21, 0.4)',
+            color: 'var(--text-primary)',
+            fontSize: '0.95rem',
+            textAlign: 'center',
+          }}
+        >
+          Offline. This is your last saved progress, so today&rsquo;s ticks will not
+          be recorded until you are back on the network.
+        </div>
+      )}
       <header className="header">
         <h1 style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>Momentum 60</h1>
         <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>The Non-Zero Challenge. Do not break the chain.</p>

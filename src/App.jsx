@@ -19,7 +19,7 @@ import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#ec4899', fontSize: '1.5rem', fontWeight: 'bold' }}>Loading Momentum 60...</div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#E1A756', fontSize: '1.5rem', fontWeight: 'bold' }}>Loading Momentum 60...</div>;
   if (!user) return <Navigate to="/auth" />;
   return children;
 };

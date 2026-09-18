@@ -40,7 +40,7 @@ function Tools() {
   return (
     <div className="tracker-container" style={{ minHeight: '100vh', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <header style={{ textAlign: 'center', marginBottom: '3rem', maxWidth: '800px' }}>
-        <h1 style={{ fontSize: '3rem', color: '#ec4899', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h1 style={{ fontSize: '3rem', color: '#E1A756', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Tools to Keep You Moving
         </h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
@@ -75,8 +75,8 @@ function Tools() {
               className="cta-button"
               style={{ 
                 background: 'transparent', 
-                border: '2px solid #8b5cf6', 
-                color: '#8b5cf6', 
+                border: '2px solid #A36E39', 
+                color: '#A36E39', 
                 width: '100%',
                 padding: '0.75rem',
                 borderRadius: '8px',
@@ -84,7 +84,7 @@ function Tools() {
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
-              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'; }}
+              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(163, 110, 57, 0.1)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               {tool.title ? 'Download PDF' : 'Download Now'}

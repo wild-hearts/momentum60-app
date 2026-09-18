@@ -49,9 +49,9 @@ function InstallPWA() {
   if (!supportsPWA && !isIOS) return null;
 
   return (
-    <div style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'white', position: 'sticky', top: 0, zIndex: 9999, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+    <div style={{ background: 'linear-gradient(90deg, #E1A756, #A36E39)', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#081C1F', position: 'sticky', top: 0, zIndex: 9999, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ background: 'white', color: '#ec4899', padding: '0.5rem', borderRadius: '8px', display: 'flex' }}>
+        <div style={{ background: 'white', color: '#E1A756', padding: '0.5rem', borderRadius: '8px', display: 'flex' }}>
           <Download size={20} />
         </div>
         <div>
@@ -66,7 +66,7 @@ function InstallPWA() {
         {supportsPWA && (
           <button 
             onClick={onClickInstall}
-            style={{ background: 'white', color: '#ec4899', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+            style={{ background: 'white', color: '#E1A756', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
           >
             Install
           </button>

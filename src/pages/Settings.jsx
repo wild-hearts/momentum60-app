@@ -103,7 +103,7 @@ function Settings() {
     <div className="landing-container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <SettingsIcon size={64} color="#ec4899" style={{ marginBottom: '1.5rem' }} />
+          <SettingsIcon size={64} color="#E1A756" style={{ marginBottom: '1.5rem' }} />
           <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>Settings</h1>
           <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>Configure your personalised daily reminders.</p>
         </div>
@@ -113,7 +113,7 @@ function Settings() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '2rem' }}>
             <div>
               <h3 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <Bell size={24} color="#ec4899" />
+                <Bell size={24} color="#E1A756" />
                 Daily Reminders
               </h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
@@ -130,7 +130,7 @@ function Settings() {
             >
               <span style={{ 
                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
-                backgroundColor: reminderEnabled ? '#ec4899' : '#4b5563', transition: '.4s', borderRadius: '34px' 
+                backgroundColor: reminderEnabled ? '#E1A756' : '#4b5563', transition: '.4s', borderRadius: '34px' 
               }}>
                 <span style={{
                   position: 'absolute', content: '""', height: '26px', width: '26px', left: '4px', bottom: '4px',

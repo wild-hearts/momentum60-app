@@ -10,8 +10,17 @@ function Landing() {
     <div className="landing-container">
       <header className="landing-hero">
         <div className="landing-hero-content">
-          <h2 style={{ fontSize: '1.5rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '1rem' }}>The Non-Zero Challenge</h2>
-          <h1>Momentum 60</h1>
+          {/* The logo is the title. The h1 stays for screen readers and search,
+              but the eye gets the same mark as the app icon and the books. */}
+          <img
+            src="/momentum60-logo.png"
+            alt=""
+            className="landing-logo"
+            width="320"
+            height="320"
+          />
+          <h1 className="visually-hidden">Momentum 60</h1>
+          <h2 className="landing-eyebrow">The Non-Zero Challenge</h2>
           <p className="landing-subtitle">
             A transformative 60-day program to build courage as a habit, survive the messy middle, and put your soul back in the driver's seat.
           </p>

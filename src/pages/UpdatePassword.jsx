@@ -34,7 +34,7 @@ function UpdatePassword() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
       <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', textAlign: 'center', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', textAlign: 'center', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
           Momentum 60
         </h1>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
@@ -64,7 +64,7 @@ function UpdatePassword() {
               <input type="password" placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} style={inputStyle} />
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}>
+              style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}>
               {loading ? 'Saving...' : (<>Save New Password<ArrowRight size={20} /></>)}
             </button>
           </form>

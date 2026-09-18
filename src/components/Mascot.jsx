@@ -57,14 +57,14 @@ function Mascot({ unlockedDays, isTodayCompleted }) {
             height: '180px', 
             borderRadius: '50%', 
             objectFit: 'cover', 
-            border: `4px solid ${isTodayCompleted ? '#10b981' : '#ec4899'}`, 
-            boxShadow: `0 0 30px ${isTodayCompleted ? 'rgba(16, 185, 129, 0.4)' : 'rgba(236, 72, 153, 0.4)'}`,
+            border: `4px solid ${isTodayCompleted ? '#10b981' : '#E1A756'}`, 
+            boxShadow: `0 0 30px ${isTodayCompleted ? 'rgba(16, 185, 129, 0.4)' : 'rgba(225, 167, 86, 0.4)'}`,
             transition: 'all 0.5s ease'
           }} 
         />
       </div>
       
-      <h3 style={{ fontSize: '1.5rem', color: '#ec4899', marginTop: '1.5rem', fontWeight: 'bold' }}>{stageName}</h3>
+      <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginTop: '1.5rem', fontWeight: 'bold' }}>{stageName}</h3>
       <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '1.1rem', fontStyle: 'italic', padding: '0 1rem' }}>
         "{mascotLore[stageIndex]}"
       </p>

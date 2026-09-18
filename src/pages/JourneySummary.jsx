@@ -47,7 +47,7 @@ function JourneySummary() {
         <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>The complete chronicle of your Momentum 60 challenge.</p>
         <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <button className="cta-button" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--accent-color)', color: 'var(--text-primary)' }} onClick={() => navigate('/app')}>Back to Tracker</button>
-          <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }} onClick={handlePrint}>Print / Save as PDF</button>
+          <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)' }} onClick={handlePrint}>Print / Save as PDF</button>
         </div>
       </header>
 
@@ -71,7 +71,7 @@ function JourneySummary() {
               position: 'relative'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', color: '#ec4899', margin: 0 }}>Day {dayNum}</h3>
+                <h3 style={{ fontSize: '1.5rem', color: '#E1A756', margin: 0 }}>Day {dayNum}</h3>
                 <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{dateStr}</span>
               </div>
               

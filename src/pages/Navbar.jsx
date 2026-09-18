@@ -67,7 +67,7 @@ function Navbar() {
               <Link to="/app" className={`nav-cta ${location.pathname === '/app' ? 'active' : ''}`}>Tracker</Link>
             </li>
             <li>
-              <button onClick={handleSignOut} className="nav-cta" style={{ background: 'transparent', border: '1px solid #ec4899', color: '#ec4899', cursor: 'pointer' }}>Sign Out</button>
+              <button onClick={handleSignOut} className="nav-cta" style={{ background: 'transparent', border: '1px solid #E1A756', color: '#E1A756', cursor: 'pointer' }}>Sign Out</button>
             </li>
           </>
         ) : (

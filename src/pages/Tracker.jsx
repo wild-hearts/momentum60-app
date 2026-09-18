@@ -174,12 +174,12 @@ function Tracker() {
         var duration = 3000;
         var end = Date.now() + duration;
         (function frame() {
-          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
-          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
+          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
           if (Date.now() < end) requestAnimationFrame(frame);
         }());
       } else {
-         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ec4899', '#8b5cf6', '#ffffff'] });
+         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
       }
       
       // Delay the quote modal slightly so confetti has time to pop
@@ -231,7 +231,7 @@ function Tracker() {
       return (
         <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>The Commitment</h1>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #E1A756 0%, #A36E39 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>The Commitment</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6', textAlign: 'left' }}>
               I agree that perfection is a trap. I agree that doing nothing is no longer acceptable. I commit to the Non-Zero Rule: I will complete at least one small task every single day for the next 60 days to keep my momentum alive.
             </p>
@@ -243,7 +243,7 @@ function Tracker() {
                 value={contractName}
                 onChange={(e) => setContractName(e.target.value)}
                 placeholder="First Last"
-                style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(236,72,153,0.5)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1.2rem', fontFamily: 'monospace' }}
+                style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(225,167,86,0.5)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1.2rem', fontFamily: 'monospace' }}
               />
             </div>
             
@@ -254,7 +254,7 @@ function Tracker() {
               onClick={() => { playClick(); setContractAgreed(!contractAgreed); }}
               style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', cursor: 'pointer', textAlign: 'left' }}
             >
-              <div style={{ width: '28px', height: '28px', minWidth: '28px', borderRadius: '6px', border: '2px solid #ec4899', background: contractAgreed ? '#ec4899' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', transition: 'background 0.15s' }}>
+              <div style={{ width: '28px', height: '28px', minWidth: '28px', borderRadius: '6px', border: '2px solid #E1A756', background: contractAgreed ? '#E1A756' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', transition: 'background 0.15s' }}>
                 {contractAgreed ? '\u2713' : ''}
               </div>
               <span style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>I accept the terms and I am ready to begin.</span>
@@ -263,7 +263,7 @@ function Tracker() {
             <button 
               onClick={() => { playClick(); setOnboardingStep(2); }}
               disabled={!contractAgreed || contractName.trim() === ''}
-              style={{ width: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '1rem', border: 'none', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: (!contractAgreed || contractName.trim() === '') ? 'not-allowed' : 'pointer', opacity: (!contractAgreed || contractName.trim() === '') ? 0.5 : 1 }}
+              style={{ width: '100%', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', padding: '1rem', border: 'none', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: (!contractAgreed || contractName.trim() === '') ? 'not-allowed' : 'pointer', opacity: (!contractAgreed || contractName.trim() === '') ? 0.5 : 1 }}
             >
               Sign Contract
             </button>
@@ -275,7 +275,7 @@ function Tracker() {
     return (
       <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Accountability Mode</h1>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #E1A756 0%, #A36E39 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Accountability Mode</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6' }}>
             Before we lock in your starting clock, choose your accountability mode. This decides how you prove your daily progress.
           </p>
@@ -289,9 +289,9 @@ function Tracker() {
             </button>
             <button 
               onClick={() => startChallenge('journal')}
-              style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid #ec4899', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+              style={{ background: 'rgba(225,167,86,0.1)', border: '1px solid #E1A756', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
             >
-              <h3 style={{ color: '#ec4899', fontSize: '1.25rem', marginBottom: '0.5rem' }}>📖 Journal Mode (Recommended)</h3>
+              <h3 style={{ color: '#E1A756', fontSize: '1.25rem', marginBottom: '0.5rem' }}>📖 Journal Mode (Recommended)</h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0 }}>A daily text reflection is required. At the end of the 60 days, you get a chronological document of your entire mental journey.</p>
             </button>
           </div>
@@ -335,28 +335,28 @@ function Tracker() {
       <Mascot unlockedDays={activeCalendarDay} isTodayCompleted={isFed} />
 
       <section className="tracker-instructions" style={{ maxWidth: '1000px', margin: '0 auto 3rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', textAlign: 'left' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#ec4899', fontWeight: '700' }}>Your Daily Non-Negotiables</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#E1A756', fontWeight: '700' }}>Your Daily Non-Negotiables</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
           <strong>The Clock is Ticking:</strong> This challenge operates on a strict 24-hour calendar. You cannot skip ahead, and you cannot edit yesterday's progress. Click on today's tile below to access your daily tasks.
           <br /><br />
           <strong>The Non-Zero Rule:</strong> Even some progress is better than none. To keep the chain alive, you must complete <strong>at least ONE</strong> of these tasks every day. If you have a true "zero day", the system will detect it and force you to start over.
         </p>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #ec4899' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(225, 167, 86, 0.1)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #E1A756' }}>
           <div>
-            <h3 style={{ fontSize: '1.1rem', color: '#ec4899', marginBottom: '0.25rem' }}>Make this challenge yours.</h3>
+            <h3 style={{ fontSize: '1.1rem', color: '#E1A756', marginBottom: '0.25rem' }}>Make this challenge yours.</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>You can customize these 5 non-negotiable rules at any time to fit your goals.</p>
           </div>
           <button 
             onClick={() => navigate('/rules')} 
-            style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid #ec4899', color: '#ec4899', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid #E1A756', color: '#E1A756', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             Customize Rules
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
           {customRules.map(rule => (
-            <div key={rule.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #ec4899' }}>
+            <div key={rule.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #E1A756' }}>
               <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{rule.label}</strong>
             </div>
           ))}
@@ -366,12 +366,12 @@ function Tracker() {
       <section className="progress-section" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <div className="progress-bar-container">
-            <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
+            <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #E1A756, #A36E39)' }}></div>
           </div>
           <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
             <span>{completedCount} of 60 Days Completed</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ color: '#ec4899', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ color: '#E1A756', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
                 <span style={{ margin: '0 0.5rem', color: 'rgba(255,255,255,0.3)' }}>|</span>
                 🎟️ Free Passes: {passesAvailable}
@@ -379,7 +379,7 @@ function Tracker() {
               <button 
                 onClick={handleShare}
                 disabled={isGeneratingShare}
-                style={{ background: 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899', color: '#ec4899', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold', opacity: isGeneratingShare ? 0.5 : 1 }}
+                style={{ background: 'rgba(225, 167, 86, 0.2)', border: '1px solid #E1A756', color: '#E1A756', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold', opacity: isGeneratingShare ? 0.5 : 1 }}
               >
                 {isGeneratingShare ? 'Generating...' : 'Share 📸 (IG/TikTok/FB)'}
               </button>
@@ -388,7 +388,7 @@ function Tracker() {
         </div>
 
         <div className="milestone-roadmap" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
-          <h3 style={{ fontSize: '1.25rem', color: '#ec4899', marginBottom: '1rem' }}>Your Journey Milestones</h3>
+          <h3 style={{ fontSize: '1.25rem', color: '#E1A756', marginBottom: '1rem' }}>Your Journey Milestones</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <li style={{ opacity: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span>🎟️</span> <strong>10-Day Perfect Streak:</strong> Earns 1 Free Pass (consumed automatically on Zero Days).
@@ -420,13 +420,13 @@ function Tracker() {
         )}
 
         {(longestPerfectStreak >= 40 || completedCount >= 60) && (
-          <div style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ec4899', textAlign: 'center', animation: 'pulse 2s infinite' }}>
-            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(236,72,153,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
+          <div style={{ background: 'linear-gradient(135deg, rgba(225, 167, 86, 0.2) 0%, rgba(163, 110, 57, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E1A756', textAlign: 'center', animation: 'pulse 2s infinite' }}>
+            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(225,167,86,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You earned a personal song written by The Winks.</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
                 onClick={() => setRewardModal(true)}
-                style={{ background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(236,72,153,0.4)' }}
+                style={{ background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(225,167,86,0.4)' }}
               >
                 Claim Your Song
               </button>
@@ -434,7 +434,7 @@ function Tracker() {
               {userProfile?.accountability_mode === 'journal' && (
                 <button 
                   onClick={() => navigate('/summary')}
-                  style={{ background: 'transparent', color: '#ec4899', padding: '0.75rem 2rem', border: '2px solid #ec4899', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ background: 'transparent', color: '#E1A756', padding: '0.75rem 2rem', border: '2px solid #E1A756', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Read Your Final Summary
                 </button>
@@ -458,8 +458,8 @@ function Tracker() {
               onClick={() => handleDayClick(dayNum)}
               style={{ 
                 animationDelay: `${(index % 10) * 0.05}s`,
-                boxShadow: dayNum === activeCalendarDay ? '0 0 20px rgba(236, 72, 153, 0.5)' : 'none',
-                border: dayNum === activeCalendarDay ? '2px solid #ec4899' : 'none'
+                boxShadow: dayNum === activeCalendarDay ? '0 0 20px rgba(225, 167, 86, 0.5)' : 'none',
+                border: dayNum === activeCalendarDay ? '2px solid #E1A756' : 'none'
               }}
             >
               <div className="day-card-inner">
@@ -501,16 +501,16 @@ function Tracker() {
             <button className="modal-close" onClick={() => { playClick(); setSelectedDay(null); }}>
               &times;
             </button>
-            <div className="modal-day-badge" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', color: 'white', padding: '0.25rem 1rem', borderRadius: '999px', display: 'inline-block', marginBottom: '1.5rem', fontWeight: 'bold' }}>Day {selectedDay}</div>
+            <div className="modal-day-badge" style={{ background: 'linear-gradient(135deg, #E1A756 0%, #A36E39 100%)', color: '#081C1F', padding: '0.25rem 1rem', borderRadius: '999px', display: 'inline-block', marginBottom: '1.5rem', fontWeight: 'bold' }}>Day {selectedDay}</div>
             
-            <div className="daily-prompt-section" style={{ background: 'rgba(236, 72, 153, 0.1)', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #ec4899', marginBottom: '1.5rem', textAlign: 'left' }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#ec4899', marginBottom: '0.5rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Soul Focus Prompt:</h3>
+            <div className="daily-prompt-section" style={{ background: 'rgba(225, 167, 86, 0.1)', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #E1A756', marginBottom: '1.5rem', textAlign: 'left' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Soul Focus Prompt:</h3>
               <p style={{ fontSize: '1.15rem', color: 'var(--text-primary)', lineHeight: '1.6', fontWeight: '500' }}>{dailyPrompts[selectedDay - 1]}</p>
             </div>
 
             <div className="daily-anthem-section" style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#8b5cf6', marginBottom: '0.5rem', textAlign: 'left', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Anthem:</h3>
-              <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '12px', padding: '1rem', textAlign: 'left' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#A36E39', marginBottom: '0.5rem', textAlign: 'left', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Anthem:</h3>
+              <div style={{ background: 'rgba(163, 110, 57, 0.1)', border: '1px solid rgba(163, 110, 57, 0.3)', borderRadius: '12px', padding: '1rem', textAlign: 'left' }}>
                 <p style={{ margin: '0 0 0.75rem 0', color: 'var(--text-primary)', fontWeight: '700', fontSize: '1.05rem' }}>
                   “{dailySongs[selectedDay - 1].title}”
                 </p>
@@ -575,7 +575,7 @@ function Tracker() {
 
             {userProfile?.accountability_mode === 'journal' && (
               <div className="reflection-section" style={{ textAlign: 'left', marginBottom: '2rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ec4899', fontWeight: 'bold' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#E1A756', fontWeight: 'bold' }}>
                   Daily Reflection (Required for Journal Mode)
                 </label>
                 <textarea
@@ -603,7 +603,7 @@ function Tracker() {
       {/* Fail Modal */}
       {hasFailed && (
         <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.95)' }}>
-          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'center', background: '#111827', border: '2px solid #ef4444', boxShadow: '0 0 50px rgba(239, 68, 68, 0.3)' }}>
+          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'center', background: '#081C1F', border: '2px solid #ef4444', boxShadow: '0 0 50px rgba(239, 68, 68, 0.3)' }}>
             <h2 style={{ fontSize: '3rem', color: '#ef4444', marginBottom: '1rem', fontWeight: '900', textTransform: 'uppercase' }}>Chain Broken</h2>
             <p style={{ fontSize: '1.2rem', color: 'white', marginBottom: '2rem', lineHeight: '1.6' }}>
               You had a zero-day on <strong>Day {failedDay}</strong>, and you had <strong>0 Free Passes</strong> left to save you. The universe doesn't pause, and neither does the calendar.
@@ -622,7 +622,7 @@ function Tracker() {
       {quoteModal.show && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setQuoteModal({ show: false, quote: '' })}>
           <div className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Day Completed
             </h2>
             <div style={{ fontSize: '1.4rem', color: 'white', fontStyle: 'italic', lineHeight: '1.6', margin: '2rem 0', fontWeight: '500' }}>
@@ -630,7 +630,7 @@ function Tracker() {
             </div>
             <button 
               className="cta-button primary"
-              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}
+              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)' }}
               onClick={() => { playClick(); setQuoteModal({ show: false, quote: '' }); }}
             >
               Continue building momentum
@@ -642,9 +642,9 @@ function Tracker() {
       {/* Reward Claim Modal */}
       {rewardModal && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setRewardModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#111827', border: '1px solid #ec4899', boxShadow: '0 25px 50px -12px rgba(236, 72, 153, 0.3)' }} onClick={e => e.stopPropagation()}>
+          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setRewardModal(false)}>&times;</button>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Claim Your Personal Song
             </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
@@ -678,7 +678,7 @@ function Tracker() {
 
               <button 
                 type="submit"
-                style={{ width: '100%', marginTop: '1rem', padding: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', fontSize: '1.1rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                style={{ width: '100%', marginTop: '1rem', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', fontSize: '1.1rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
               >
                 Send Request to The Winks
               </button>
@@ -690,10 +690,10 @@ function Tracker() {
       {/* Hidden Share Card used for HTML-to-Image */}
       <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
         <div ref={shareCardRef} style={{ width: '1080px', height: '1920px', background: 'radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', padding: '4rem', boxSizing: 'border-box', fontFamily: '"Inter", sans-serif' }}>
-          <h1 style={{ fontSize: '6rem', color: '#ec4899', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Momentum 60</h1>
+          <h1 style={{ fontSize: '6rem', color: '#E1A756', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Momentum 60</h1>
           <div style={{ fontSize: '3.5rem', marginBottom: '4rem', color: 'rgba(255,255,255,0.8)' }}>I am building unstoppable momentum.</div>
           
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '5rem', borderRadius: '32px', border: '4px solid #ec4899', textAlign: 'center', width: '80%', boxShadow: '0 0 100px rgba(236,72,153,0.3)' }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '5rem', borderRadius: '32px', border: '4px solid #E1A756', textAlign: 'center', width: '80%', boxShadow: '0 0 100px rgba(225,167,86,0.3)' }}>
             <div style={{ fontSize: '8rem', marginBottom: '1rem' }}>🔥</div>
             <div style={{ fontSize: '10rem', fontWeight: '900', color: '#10b981', lineHeight: '1' }}>{currentPerfectStreak}</div>
             <div style={{ fontSize: '3rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '1rem', color: 'rgba(255,255,255,0.9)' }}>Day Perfect Streak</div>

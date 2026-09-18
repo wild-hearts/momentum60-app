@@ -77,7 +77,7 @@ function Team() {
   return (
     <div className="landing-container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 2rem', textAlign: 'center' }}>
-        <Users size={64} color="#ec4899" style={{ marginBottom: '1.5rem' }} />
+        <Users size={64} color="#E1A756" style={{ marginBottom: '1.5rem' }} />
         <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>Team Up</h1>
         <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '4rem' }}>
           Accountability is everything. Link your dashboard with a friend and never have a zero day again.
@@ -88,7 +88,7 @@ function Team() {
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Your Invite Code</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Share this code with your partner.</p>
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#ec4899' }}>{inviteCode}</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#E1A756' }}>{inviteCode}</span>
               <button onClick={handleCopy} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                 {copied ? <CheckCircle color="#10b981" /> : <Copy />}
               </button>
@@ -104,7 +104,7 @@ function Team() {
                 
                 {partnerProgress !== null && (
                   <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#ec4899' }}><Flame size={20} /> Head-to-Head</h4>
+                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#E1A756' }}><Flame size={20} /> Head-to-Head</h4>
                     
                     <div style={{ marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
@@ -112,7 +112,7 @@ function Team() {
                         <strong>{myCompletedCount} Days</strong>
                       </div>
                       <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: `${(myCompletedCount/60)*100}%`, height: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)' }}></div>
+                        <div style={{ width: `${(myCompletedCount/60)*100}%`, height: '100%', background: 'linear-gradient(90deg, #E1A756, #A36E39)' }}></div>
                       </div>
                     </div>
                     

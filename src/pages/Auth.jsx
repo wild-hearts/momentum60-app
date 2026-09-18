@@ -42,7 +42,14 @@ function Auth() {
       
       <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
         
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', textAlign: 'center', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
+        <img
+          src="/momentum60-logo.png"
+          alt=""
+          width="112"
+          height="112"
+          style={{ display: 'block', width: '112px', height: '112px', margin: '0 auto 1rem', borderRadius: '22%', boxShadow: '0 12px 30px rgba(0,0,0,0.5)' }}
+        />
+        <h1 className="visually-hidden">
           Momentum 60
         </h1>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
@@ -94,7 +101,7 @@ function Auth() {
           <button 
             type="submit" 
             disabled={loading}
-            style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}
+            style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}
           >
             {loading ? 'Processing...' : (
               <>
@@ -109,7 +116,7 @@ function Auth() {
           {mode === 'login' ? (
             <>
               <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
-                Don't have an account? <span style={{ color: '#ec4899' }}>Sign up</span>
+                Don't have an account? <span style={{ color: '#E1A756' }}>Sign up</span>
               </button>
               <button onClick={() => setMode('forgot')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
                 Forgot your password?
@@ -117,7 +124,7 @@ function Auth() {
             </>
           ) : mode === 'signup' ? (
             <button onClick={() => setMode('login')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
-              Already have an account? <span style={{ color: '#ec4899' }}>Sign in</span>
+              Already have an account? <span style={{ color: '#E1A756' }}>Sign in</span>
             </button>
           ) : (
             <button onClick={() => setMode('login')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>

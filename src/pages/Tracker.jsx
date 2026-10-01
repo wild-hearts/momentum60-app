@@ -159,11 +159,13 @@ function Tracker() {
     
     const allNowDone = currentlyDoneCount === customRules.length;
 
+    // Select a random quote (hoisted: both branches below use it; it used to be scoped to the first one,
+    // so finishing all five rules threw a ReferenceError and the quote modal never appeared)
+    const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+
     if (anyNowDone && !wasAnyDone) {
       playChime();
       
-      // Select a random quote
-      const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
       setQuoteModal({ show: true, quote: randomQuote });
     }
     

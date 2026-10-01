@@ -309,8 +309,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Auth Functions
-  const signUp = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  // consent: { marketingOptIn: boolean }. Terms/privacy acceptance is required by the form before this is called.
+  // Stored on the auth user so there is a timestamped record of what each person agreed to.
+  const signUp = async (email, password, consent = {}) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          terms_accepted_at: new Date().toISOString(),
+          marketing_opt_in: Boolean(consent.marketingOptIn),
+          consent_source: 'momentum60-signup'
+        }
+      }
+    });
     if (error) throw error;
     return data;
   };

@@ -1,11 +1,3 @@
-<style>
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111827; text-align: center; }
-  h1 { color: #ec4899; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-  p { color: #6b7280; margin-bottom: 20px; }
-  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 0 auto; width: 100%; max-width: 800px; }
-  .day { border: 2px solid #d1d5db; border-radius: 8px; padding: 20px 0; font-size: 1.5em; font-weight: bold; color: #9ca3af; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
-</style>
-
 # Momentum 60 Visual Tracker
 <p>Print this. Hang it up. Cross off every successful day with a thick red marker. Do not break the chain.</p>
 

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { syncMarketingOptIn } from '../utils/marketingSync';
 import { supabase } from '../supabaseClient';
 
 export const AuthContext = createContext();
@@ -55,6 +56,8 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
+        // setTimeout: supabase-js can deadlock if you call it from inside its own auth callback
+        setTimeout(() => syncMarketingOptIn(session, supabase), 0);
       } else {
         setLoading(false);
       }
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
+        setTimeout(() => syncMarketingOptIn(session, supabase), 0);
       } else {
         // Clear data on logout
         setCustomRules([]);

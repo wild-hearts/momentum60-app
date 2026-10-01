@@ -8,34 +8,34 @@ function Tools() {
       title: 'Cheat Sheets',
       description: 'Quick reference guides to keep you on track when the friction is high. Print these out and stick them somewhere visible.',
       icon: '📝',
-      url: '/downloads/cheat_sheets.html'
+      url: '/downloads/cheat_sheets.pdf',
+      filename: 'momentum60_cheat_sheets.pdf'
     },
     {
       id: 'starter-kit',
       title: 'Starter Kit',
       description: 'Everything you need to set up your environment for the Momentum 60 challenge. Remove the guesswork and start moving.',
       icon: '🚀',
-      url: '/downloads/starter_kit.html'
+      url: '/downloads/starter_kit.pdf',
+      filename: 'momentum60_starter_kit.pdf'
     },
     {
       id: 'self-assessment',
       title: 'Self Assessment',
       description: 'A brutally honest diagnostic tool to identify where you are leaking energy and how to plug the holes.',
       icon: '🔍',
-      url: '/downloads/self_assessment.html'
+      url: '/downloads/self_assessment.pdf',
+      filename: 'momentum60_self_assessment.pdf'
     },
     {
       id: 'printable-calendar',
       title: 'Printable Calendar',
       description: 'A physical 60-day visual tracker. Cross off the days with a red marker to build an unbreakable physical chain.',
       icon: '📅',
-      url: '/downloads/printable_calendar.html'
+      url: '/downloads/printable_calendar.pdf',
+      filename: 'momentum60_printable_calendar.pdf'
     }
   ];
-
-  const handleDownload = (tool) => {
-    window.open(tool.url, '_blank');
-  };
 
   return (
     <div className="tracker-container" style={{ minHeight: '100vh', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -70,13 +70,18 @@ function Tools() {
             <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5', flexGrow: 1, marginBottom: '2rem' }}>
               {tool.description}
             </p>
-            <button 
-              onClick={() => handleDownload(tool)}
+            <a
+              href={tool.url}
+              download={tool.filename}
               className="cta-button"
-              style={{ 
-                background: 'transparent', 
-                border: '2px solid #A36E39', 
-                color: '#A36E39', 
+              style={{
+                display: 'block',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+                textDecoration: 'none',
+                background: 'transparent',
+                border: '2px solid #A36E39',
+                color: '#A36E39',
                 width: '100%',
                 padding: '0.75rem',
                 borderRadius: '8px',
@@ -87,8 +92,8 @@ function Tools() {
               onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(163, 110, 57, 0.1)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              {tool.title ? 'Download PDF' : 'Download Now'}
-            </button>
+              Download PDF
+            </a>
           </div>
         ))}
       </div>

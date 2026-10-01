@@ -13,7 +13,9 @@ function Landing() {
           {/* The logo is the title. The h1 stays for screen readers and search,
               but the eye gets the same mark as the app icon and the books. */}
           <img
-            src="/momentum60-logo.png"
+            src="/momentum60-logo.webp"
+            fetchPriority="high"
+            decoding="async"
             alt=""
             className="landing-logo"
             width="320"

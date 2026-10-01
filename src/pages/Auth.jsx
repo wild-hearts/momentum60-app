@@ -10,6 +10,8 @@ function Auth() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -24,7 +26,11 @@ function Auth() {
         await signIn(email, password);
         navigate('/tracker');
       } else if (mode === 'signup') {
-        await signUp(email, password);
+        if (!acceptedTerms) {
+          setError('Please accept the Terms and Privacy Policy to create your account.');
+          return;
+        }
+        await signUp(email, password, { marketingOptIn });
         setMessage('Check your email for the confirmation link to log in.');
       } else if (mode === 'forgot') {
         await resetPassword(email);
@@ -38,12 +44,14 @@ function Auth() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem 2rem' }}>
       
       <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
         
         <img
-          src="/momentum60-logo.png"
+          src="/momentum60-logo.webp"
+            fetchPriority="high"
+            decoding="async"
           alt=""
           width="112"
           height="112"
@@ -98,6 +106,36 @@ function Auth() {
             </div>
           )}
 
+
+          {mode === 'signup' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              <label style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  required
+                  style={{ marginTop: '0.2rem', accentColor: '#E1A756', width: '1.05rem', height: '1.05rem', flexShrink: 0 }}
+                />
+                <span>
+                  I agree to the{' '}
+                  <a href="https://www.themomentumrule.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#E1A756' }}>Terms</a>
+                  {' '}and{' '}
+                  <a href="https://www.themomentumrule.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#E1A756' }}>Privacy Policy</a>.
+                </span>
+              </label>
+              <label style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(e) => setMarketingOptIn(e.target.checked)}
+                  style={{ marginTop: '0.2rem', accentColor: '#E1A756', width: '1.05rem', height: '1.05rem', flexShrink: 0 }}
+                />
+                <span>Email me news, new books and music from Naomi Shiels. Optional, and you can unsubscribe any time.</span>
+              </label>
+            </div>
+          )}
+
           <button 
             type="submit" 
             disabled={loading}
@@ -115,7 +153,7 @@ function Auth() {
         <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
           {mode === 'login' ? (
             <>
-              <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
+              <button onClick={() => { setMode('signup'); setError(''); setMessage(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
                 Don't have an account? <span style={{ color: '#E1A756' }}>Sign up</span>
               </button>
               <button onClick={() => setMode('forgot')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>

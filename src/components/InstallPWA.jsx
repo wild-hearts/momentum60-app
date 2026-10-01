@@ -48,8 +48,10 @@ function InstallPWA() {
   if (isStandalone || !showBanner) return null;
   if (!supportsPWA && !isIOS) return null;
 
+  // Fixed to the bottom on purpose: this appears after load (beforeinstallprompt), and in the flow at the top
+  // it pushed the whole page down and made first taps land on the wrong thing.
   return (
-    <div style={{ background: 'linear-gradient(90deg, #E1A756, #A36E39)', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#081C1F', position: 'sticky', top: 0, zIndex: 9999, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+    <div style={{ background: 'linear-gradient(90deg, #E1A756, #A36E39)', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#081C1F', position: 'fixed', left: 0, right: 0, bottom: 0, paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))', zIndex: 9999, boxShadow: '0 -4px 12px rgba(0,0,0,0.25)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{ background: 'white', color: '#E1A756', padding: '0.5rem', borderRadius: '8px', display: 'flex' }}>
           <Download size={20} />

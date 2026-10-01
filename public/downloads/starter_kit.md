@@ -1,11 +1,3 @@
-<style>
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111827; }
-  h1 { color: #ec4899; text-transform: uppercase; letter-spacing: 2px; }
-  h2 { color: #8b5cf6; }
-  .box { border: 2px solid #111827; padding: 20px; border-radius: 8px; margin: 20px 0; }
-  .check { font-weight: bold; font-size: 1.2em; color: #10b981; }
-</style>
-
 # The Momentum 60 Starter Kit
 *Confidence was never going to show up first. It’s time to start moving.*
 
@@ -14,6 +6,7 @@ Do not start this challenge tomorrow without setting up your environment today. 
 
 ### 1. Remove the Friction
 If you have to think about it, you won't do it.
+
 - [ ] Lay out your physical tools (running shoes, notebook, pen) right now.
 - [ ] Schedule your 5 tasks in your calendar as non-negotiable appointments.
 

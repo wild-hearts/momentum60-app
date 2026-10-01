@@ -1,10 +1,3 @@
-<style>
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111827; }
-  h1 { color: #ec4899; text-transform: uppercase; letter-spacing: 2px; }
-  h2 { color: #8b5cf6; }
-  .score-box { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; margin-top: 20px; border-radius: 8px; }
-</style>
-
 # The Brutal Self-Assessment
 *A diagnostic tool to identify where you are leaking energy. Be honest.*
 
@@ -19,7 +12,7 @@ Rate yourself on a scale of 1 (Never) to 5 (Always).
 7. I feel like my body is driving the car, and my soul is just sitting in the passenger seat. _____
 8. I let a "flat feeling" dictate the temperature of my entire day. _____
 
-**Total Score: _____**
+**Total Score:** &#95;&#95;&#95;&#95;&#95;
 
 ## The Diagnosis
 

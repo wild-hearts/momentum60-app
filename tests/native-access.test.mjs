@@ -1,6 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {nativeAccess} from '../api/_lib/nativeAccess.js';
-const value={subscriber:{entitlements:{momentum60:{product_identifier:'monthly',expires_date:'2099-01-01T00:00:00Z'}},subscriptions:{monthly:{is_sandbox:false}}}};
-test('only allowed native products grant access',()=>{assert.equal(nativeAccess(value,['monthly']),'2099-01-01T00:00:00Z');assert.equal(nativeAccess(value,[]),null)});
-test('production rejects sandbox and refund receipts',()=>{const copy=structuredClone(value);copy.subscriber.subscriptions.monthly.is_sandbox=true;assert.equal(nativeAccess(copy,['monthly']),null);assert.ok(nativeAccess(copy,['monthly'],true));copy.subscriber.subscriptions.monthly.refunded_at='2026-01-01';assert.equal(nativeAccess(copy,['monthly'],true),null)});
+import {nativeAccess,nativeBillingStores} from '../api/_lib/nativeAccess.js';
+const value={subscriber:{entitlements:{momentum60:{product_identifier:'monthly',expires_date:'2099-01-01T00:00:00Z'}},subscriptions:{monthly:{store:'app_store',is_sandbox:false}}}};
+test('only approved store products grant access',()=>{assert.ok(nativeAccess(value,['monthly']));assert.equal(nativeAccess(value,[]),null);assert.equal(nativeAccess(null,['monthly']),null)});
+test('verified Apple and Play sandbox subscriptions unlock the review build',()=>{for(const store of ['app_store','play_store']){const copy=structuredClone(value);Object.assign(copy.subscriber.subscriptions.monthly,{store,is_sandbox:true});assert.ok(nativeAccess(copy,['monthly']));}});
+test('refunds, expiration, test-store and promotional purchases cannot unlock',()=>{for(const store of ['test_store','promotional',undefined]){const copy=structuredClone(value);copy.subscriber.subscriptions.monthly.store=store;assert.equal(nativeAccess(copy,['monthly']),null);}const copy=structuredClone(value);copy.subscriber.subscriptions.monthly.refunded_at='2026-01-01';assert.equal(nativeAccess(copy,['monthly']),null);delete copy.subscriber.subscriptions.monthly.refunded_at;copy.subscriber.entitlements.momentum60.expires_date='2020-01-01';assert.equal(nativeAccess(copy,['monthly']),null)});
+test('billing owners come from approved purchase records, not the current phone',()=>{const copy=structuredClone(value);copy.subscriber.subscriptions.android={store:'play_store'};copy.subscriber.subscriptions.promo={store:'promotional'};assert.deepEqual(nativeBillingStores(copy,['monthly','android','promo']),['app_store','play_store']);});

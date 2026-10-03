@@ -1,9 +1,8 @@
-import { Capacitor } from '@capacitor/core';
+import BillingSettings from '../components/BillingSettings';
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Settings as SettingsIcon, Bell, Globe, AlertTriangle } from 'lucide-react';
 import { billingRequest } from '../lib/billingClient';
-import { supabase } from '../supabaseClient';
 import {
   isNative,
   requestPermission,
@@ -13,7 +12,7 @@ import {
 import './Landing.css';
 
 function Settings() {
-  const { userProfile, updateProfileSettings } = useContext(AuthContext);
+  const { userProfile, updateProfileSettings, endSession } = useContext(AuthContext);
 
   const [reminderEnabled, setReminderEnabled] = useState(userProfile?.reminder_enabled || false);
   const [reminderTime, setReminderTime] = useState(userProfile?.reminder_time || '18:00');
@@ -42,7 +41,7 @@ function Settings() {
     // save has to schedule or cancel it, not just record a preference.
     let deviceNote = '';
     if (native && success) {
-      if (reminderEnabled) {
+      if (reminderEnabled && !userProfile?.paused_since) {
         const allowed = await requestPermission();
         if (allowed) {
           const ok = await scheduleDailyReminder(reminderTime);
@@ -55,7 +54,7 @@ function Settings() {
         }
       } else {
         await cancelDailyReminder();
-        deviceNote = ' Reminders on this device are off.';
+        deviceNote = userProfile?.paused_since ? ' Your programme is paused, so reminders on this device are off.' : ' Reminders on this device are off.';
       }
     }
 
@@ -71,16 +70,18 @@ function Settings() {
   const handleDelete = async () => {
     setDeleteError('');
     setIsDeleting(true);
+    let serverDeleted = false;
     try {
       await billingRequest('delete-account');
-      await cancelDailyReminder();
-      await supabase.auth.signOut();
+      serverDeleted = true;
+      await endSession();
       window.location.href = '/';
     } catch (e) {
       console.error('account deletion failed', e);
       setIsDeleting(false);
+      if (serverDeleted) window.alert('Your online account was deleted. Device cleanup could not be confirmed. Clear this app’s stored data before sharing the device.');
       setDeleteError(
-        'We could not confirm account deletion. Your subscription may already be cancelled. Email info@themomentumrule.com and it will be done by hand.'
+        serverDeleted ? 'Your online account was deleted, but this device could not finish cleanup. Close the app and clear its stored data before sharing the device.' : 'We could not confirm account deletion. Your web renewal may already be cancelled. Please retry, or contact info@themomentumrule.com for help.'
       );
     }
   };
@@ -95,7 +96,7 @@ function Settings() {
         </div>
 
         <section><h2>Sound effects</h2><label><input type="checkbox" checked={sounds} onChange={e=>{setSounds(e.target.checked);try{localStorage.setItem('momentum60:sounds',e.target.checked?'on':'off')}catch{setMessage('Sound preference could not be saved on this device.')}}}/> Play short confirmation sounds on this device</label><p>Music is controlled separately. All action and save confirmations also appear as text.</p></section>
-        <section><h2>Subscription</h2><p>Programme progress and billing are separate. Cancelling renewal does not erase your saved history.</p><button type="button" className="cta-button" onClick={async()=>{try{if(native){window.location.href = Capacitor.getPlatform()==='ios'?'https://apps.apple.com/account/subscriptions':'https://play.google.com/store/account/subscriptions';}else{const {url}=await billingRequest('billing-portal');window.location.assign(url)}}catch(e){setMessage(e.message)}}}>Manage subscription</button></section>
+        <BillingSettings />
         <form onSubmit={handleSave} className="rule-card" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '2rem' }}>
@@ -106,11 +107,12 @@ function Settings() {
               </h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
                 {native
-                  ? 'A nudge on this phone at the time you choose, even when the app is closed.'
-                  : "Receive an email if you haven't completed your daily task."}
+                  ? 'A daily nudge on this phone around the time you choose. You may still see it after recording an action.'
+                  : "Email reminders are not available in this release."}
               </p>
             </div>
             <button type="button" aria-label="Daily reminders"
+              disabled={!native}
               role="switch"
               aria-checked={reminderEnabled}
               onClick={() => setReminderEnabled(!reminderEnabled)}
@@ -156,7 +158,7 @@ function Settings() {
           </div>
 
           {message && (
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: message.includes('Failed') ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+            <div role="status" style={{ textAlign: 'center', marginBottom: '1.5rem', color: message.includes('Failed') ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
               {message}
             </div>
           )}

@@ -14,7 +14,10 @@ test('archive is atomic, idempotent, private, and rejects a stale season write',
  await db.exec(readFileSync(new URL('../supabase/migrations/202610030008_billing_mutex.sql',import.meta.url),'utf8'));
  await db.exec(readFileSync(new URL('../supabase/migrations/202610030009_reconciliation_version.sql',import.meta.url),'utf8'));
  await db.exec(readFileSync(new URL('../supabase/migrations/202610030010_subscription_gap.sql',import.meta.url),'utf8'));
+ await db.exec(readFileSync(new URL('../supabase/migrations/202610030011_disable_partner_sharing.sql',import.meta.url),'utf8'));
+ await db.exec(readFileSync(new URL('../supabase/migrations/202610030012_native_billing_stores.sql',import.meta.url),'utf8'));
  await db.exec(`SET ROLE authenticated;SELECT set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);`);
+ await assert.rejects(db.exec("UPDATE momentum_subscriptions SET native_billing_stores=ARRAY['app_store']"),/permission denied/);
  const request='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';const first=await db.query('SELECT archive_and_start_season($1) AS id',[request]);const repeat=await db.query('SELECT archive_and_start_season($1) AS id',[request]);assert.equal(first.rows[0].id,repeat.rows[0].id);
  const archive=await db.query('SELECT * FROM momentum_season_archives');assert.equal(archive.rows.length,1);assert.equal(archive.rows[0].reflections[0].content,'Private reflection');
  await db.exec(`SELECT set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',false);`);assert.equal((await db.query('SELECT * FROM momentum_season_archives')).rows.length,0);

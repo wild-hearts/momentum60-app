@@ -1,54 +1,16 @@
-import React from 'react';
-import './Landing.css'; // Reuse landing styles
-
-function FAQ() {
-  return (
-    <div className="landing-container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 2rem' }}>
-        <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>Frequently Asked Questions</h1>
-        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '4rem' }}>No excuses. Just answers.</p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', textAlign: 'left' }}>
-          
-          <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>What happens if I miss a day?</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Your saved progress stays with you. Return to today and choose <strong>one manageable action</strong>. A missed day remains a missed day in your history; it does not erase earlier actions or force a restart. There is no catch-up requirement.
-            </p>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>I don't have the "Momentum Series" books. What do I do for Rule 4?</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Rule 4 is "The Input". If you do not have the books, substitute it with 10 pages of ANY non-fiction book that drives personal growth, or listen to an educational podcast. Audiobooks do not count unless you are actively taking notes. You can purchase the Momentum Series books on our Books page.
-            </p>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>Can I modify the daily discipline in Rule 2?</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Yes, but you must define it on Day 1 and it must remain the same for all 60 days. Whether it is a 45-minute workout, 30 minutes of writing, or 20 minutes of language learning, you commit to it up front and you do not change it.
-            </p>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>What counts as a "When I..." statement (Rule 5)?</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Any thought that delays living until conditions are perfect. "I'll start dating when I lose 10 pounds." "I'll launch the business when I have more time." "I'll feel confident when I get the promotion." You must catch these thoughts, acknowledge them, and rewrite them in the present tense. 
-            </p>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>Why are there no physical appearance goals?</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Because your body is the vehicle, your soul is the driver. This challenge is about mental toughness, internal momentum, and building the habit of courage. The physical changes will happen as a byproduct of your discipline, but they are not the focus.
-            </p>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default FAQ;
+import {Link} from 'react-router-dom';
+const answers=[
+ ['What do I do each day?','Choose one practice, give it a familiar cue, and record it when you do it. Set a smaller version too: a paragraph instead of ten pages, for example. Either version counts.'],
+ ['What if I miss a day?','Return to today. Earlier actions stay recorded. There is no forced restart and no catch-up requirement.'],
+ ['Do I have to listen or write?','No. Music and reflection are optional. Your action counts without either.'],
+ ['What does the monthly subscription include?','The 60-day programme, its album, a journal and repeat seasons. It renews monthly until cancelled. A 60-day programme can cross more than two billing dates. The store shows the price before you buy.'],
+ ['What happens after day 60?','Review your completed season, archive it and begin another with your existing practice. Repeat seasons use the same programme and album; a subscription does not promise new monthly content.'],
+ ['Can I pause?','You can pause the programme in Today. Your day count pauses, but your monthly subscription continues. To stop renewal, use Settings and billing.'],
+ ['Do I need to buy the books?','No. The practice, album and journal work without buying a book.'],
+ ['Is a personal song included?','No. Personal-song rewards belong to the earlier challenge and are available only to eligible earlier participants under their original offer.'],
+ ['What happens when I cancel?','Your paid access continues through its paid period. Your saved history remains readable afterwards. Cancel with the provider where you subscribed, shown in Settings and billing.'],
+ ['Does it work offline?','Previously loaded history and recovered drafts may be available on this device. Recording actions, loading your practice and checking subscription access need a connection. Music streams online. Check that a reflection says Saved before relying on its online copy.'],
+ ['Where is Team Up?','Partner sharing is unavailable in this release while its privacy controls are improved.'],
+ ['How do I get help?','Email info@themomentumrule.com with what happened and your device type. Never send your password or private journal text.']
+];
+export default function FAQ(){return <main className="app-container"><h1>How Momentum 60 works</h1>{answers.map(([q,a])=><section key={q}><h2>{q}</h2><p>{a}</p></section>)}<p><Link to="/settings">Settings and billing</Link> · <Link to="/delete-account">Account deletion</Link></p></main>}

@@ -1,9 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-export function services() {
+export function databaseService() {
  const url=process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
- if(!url || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STRIPE_SECRET_KEY) throw new Error('Billing is not configured');
- return {db:createClient(url,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}}),stripe:new Stripe(process.env.STRIPE_SECRET_KEY)};
+ if(!url || !process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('Service is not configured');
+ return createClient(url,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}});
+}
+export function stripeService() {
+ if(!process.env.STRIPE_SECRET_KEY) throw new Error('Web billing is not configured');
+ return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
+export function services() {
+ return {db:databaseService(),stripe:stripeService()};
 }
 export async function identity(req,db) {
  const token=req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];

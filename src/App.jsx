@@ -1,4 +1,6 @@
 import React from 'react';
+import {Capacitor} from '@capacitor/core';
+import {Privacy,Terms,DeleteAccount} from './pages/Legal';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import InstallPWA from './components/InstallPWA';
 import Navbar from './pages/Navbar';
@@ -10,7 +12,6 @@ import Music from './pages/Music';
 import FAQ from './pages/FAQ';
 import Books from './pages/Books';
 import Auth from './pages/Auth';
-import Team from './pages/Team';
 import Insights from './pages/Insights';
 import CustomRules from './pages/CustomRules';
 import JourneySummary from './pages/JourneySummary';
@@ -28,6 +29,11 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+function LegacyRoute({children}) {
+  const {legacyAccess} = useAuth();
+  return legacyAccess ? children : <Navigate to="/app" replace />;
+}
+
 function App() {
   return (
     <Router>
@@ -35,10 +41,13 @@ function App() {
       <Navbar />
       <Routes>
         {/* Public Routes */}
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/delete-account" element={<DeleteAccount />} />
         <Route path="/" element={<Landing />} />
         <Route path="/faq" element={<FAQ />} />
-        <Route path="/books" element={<Books />} />
-        <Route path="/tools" element={<Tools />} />
+        <Route path="/books" element={Capacitor.isNativePlatform()?<Navigate to="/app" replace/>:<Books />} />
+        <Route path="/tools" element={Capacitor.isNativePlatform()?<Navigate to="/app" replace/>:<Tools />} />
         <Route path="/install" element={<InstallInstructions />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/update-password" element={<UpdatePassword />} />
@@ -48,10 +57,10 @@ function App() {
         <Route path="/app" element={<ProtectedRoute><SubscriptionGate><Today /></SubscriptionGate></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/music" element={<ProtectedRoute><SubscriptionGate><Music /></SubscriptionGate></ProtectedRoute>} />
-        <Route path="/tracker" element={<ProtectedRoute><SubscriptionGate><Tracker /></SubscriptionGate></ProtectedRoute>} />
-        <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+        <Route path="/tracker" element={<ProtectedRoute><LegacyRoute><SubscriptionGate><Tracker /></SubscriptionGate></LegacyRoute></ProtectedRoute>} />
+        <Route path="/team" element={<main className="app-container"><h1>Team Up is unavailable</h1><p>Partner sharing is paused while we improve its privacy controls. Your own progress remains available in Today.</p></main>} />
         <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
-        <Route path="/rules" element={<ProtectedRoute><CustomRules /></ProtectedRoute>} />
+        <Route path="/rules" element={<ProtectedRoute><LegacyRoute><CustomRules /></LegacyRoute></ProtectedRoute>} />
         <Route path="/summary" element={<ProtectedRoute><JourneySummary /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         

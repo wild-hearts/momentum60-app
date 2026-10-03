@@ -1,6 +1,8 @@
 import { cancelDailyReminder } from '../utils/notifications';
 import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { createSessionQueue } from '../lib/sessionQueue';
+import { clearAccountStorage } from '../lib/devicePrivacy';
 import { createJournalQueue } from '../lib/journalQueue';
 
 export const AuthContext = createContext();
@@ -42,6 +44,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const currentUserId = useRef(null);
+  const endingSession = useRef(false);
+  const sessionQueue = useRef(null);
+  if (sessionQueue.current === null) sessionQueue.current = createSessionQueue();
   const progressWrites = useRef(new Set());
   const [saveError, setSaveError] = useState(null);
 
@@ -60,6 +65,7 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [dailyReflections, setDailyReflections] = useState({});
   const [teamMember, setTeamMember] = useState(null);
+  const [legacyAccess, setLegacyAccess] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -120,6 +126,9 @@ export const AuthProvider = ({ children }) => {
     setJournalStatus(prev => ({ ...prev, ...Object.fromEntries(Object.keys(restored).map(day => [day, 'restored'])) }));
     setLoading(true);
     try {
+      const {data: access, error: accessError} = await supabase.from('momentum_subscriptions').select('legacy_access').eq('user_id', userId).maybeSingle();
+      if (!current()) return;
+      setLegacyAccess(!accessError && access?.legacy_access === true);
       // Fetch Rules
       const { data: rulesData, error: rulesError } = await supabase
         .from('custom_rules')
@@ -237,11 +246,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (endingSession.current && session) return;
       const nextId = session?.user?.id ?? null;
+      if (!nextId && currentUserId.current) {
+        try { clearAccountStorage(localStorage, currentUserId.current); } catch { /* Explicit sign-out also reports cleanup errors. */ }
+        cancelDailyReminder();
+      }
       if (currentUserId.current !== nextId) {
         journalQueue.current?.close();
         activeSeason.current = null;
-        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setLegacyAccess(false); setCustomRules([]); setUserData({}); setUserProfile(null);
         setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
       }
       currentUserId.current = nextId;
@@ -256,11 +270,16 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for changes on auth state (logged in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (endingSession.current && session) return;
       const nextId = session?.user?.id ?? null;
+      if (!nextId && currentUserId.current) {
+        try { clearAccountStorage(localStorage, currentUserId.current); } catch { /* Explicit sign-out also reports cleanup errors. */ }
+        cancelDailyReminder();
+      }
       if (currentUserId.current !== nextId) {
         journalQueue.current?.close();
         activeSeason.current = null;
-        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setLegacyAccess(false); setCustomRules([]); setUserData({}); setUserProfile(null);
         setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
       }
       currentUserId.current = nextId;
@@ -405,11 +424,13 @@ export const AuthProvider = ({ children }) => {
   // Auth Functions
   // consent: { marketingOptIn: boolean }. Terms/privacy acceptance is required by the form before this is called.
   // Stored on the auth user so there is a timestamped record of what each person agreed to.
-  const signUp = async (email, password, consent = {}) => {
+  const signUp = (email, password, consent = {}) => sessionQueue.current.run(async () => {
+    endingSession.current = false;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: 'https://challenge.themomentumrule.com/auth',
         data: {
           terms_accepted_at: new Date().toISOString(),
           marketing_opt_in: Boolean(consent.marketingOptIn),
@@ -419,25 +440,41 @@ export const AuthProvider = ({ children }) => {
     });
     if (error) throw error;
     return data;
-  };
+  });
 
-  const signIn = async (email, password) => {
+  const signIn = (email, password) => sessionQueue.current.run(async () => {
+    endingSession.current = false;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
-  };
+  });
+
+  const endSession = () => sessionQueue.current.run(async () => {
+    const owner = currentUserId.current || user?.id;
+    endingSession.current = true;
+    // Invalidate asynchronous reads before clearing storage so they cannot recreate it.
+    currentUserId.current = null;
+    fetchEpoch.current++;
+    journalQueue.current?.close();
+    activeSeason.current = null;
+    journalDirty.current = {}; journalEdits.current = {};
+    setUser(null); setUserData({}); setUserProfile(null); setDailyReflections({});
+    setCustomRules([]); setTeamMember(null); setJournalStatus({}); setLegacyAccess(false);
+    let cleanupError;
+    try { clearAccountStorage(localStorage, owner); } catch { cleanupError = Error('Your device copies could not be cleared. Close this app and clear its stored data before sharing this device.'); }
+    await cancelDailyReminder();
+    const {error} = await supabase.auth.signOut({scope:'local'});
+    if (cleanupError) throw cleanupError;
+    if (error) throw error;
+    return true;
+  });
 
   const signOut = async () => {
     const owner = user?.id;
     let hasDraft = Object.values(journalStatus).some(state => state !== 'saved');
     if (owner) try { hasDraft ||= Object.keys(localStorage).some(key => key.startsWith(`momentum60:draft:${owner}:`)); } catch { /* Use in-memory status. */ }
     if (hasDraft && !window.confirm('Some journal text has not been saved online. Signing out removes this device’s drafts. Stay signed in to retry, or sign out and discard those drafts?')) return false;
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    journalQueue.current?.close();
-    await cancelDailyReminder();
-    if (owner) try { for (const key of Object.keys(localStorage)) if (key.startsWith(`momentum60:draft:${owner}:`)) localStorage.removeItem(key); } catch { /* Storage unavailable. */ }
-    return true;
+    return endSession();
   };
 
   const resetPassword = async (email) => {
@@ -491,6 +528,8 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    legacyAccess,
+    endSession,
     refreshData: () => user && fetchUserData(user.id),
     saveError,
     loading,

@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
+import { cancelDailyReminder } from '../utils/notifications';
+import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { createJournalQueue } from '../lib/journalQueue';
 
@@ -34,34 +35,46 @@ function readSnapshot(userId) {
   }
 }
 
+const draftKey = (id, day, season) => `momentum60:draft:${id}:${season}:${day}`;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   const currentUserId = useRef(null);
   const progressWrites = useRef(new Set());
   const [saveError, setSaveError] = useState(null);
 
   const journalQueue = useRef(null);
+  const seasonRequest = useRef(null);
+  const activeSeason = useRef(null);
   const fetchEpoch = useRef(0);
   const journalEdits = useRef({});
   const journalDirty = useRef({});
   const [journalStatus, setJournalStatus] = useState({});
-  const draftKey = (id, day) => `momentum60:draft:${id}:${day}`;
+
+  // Data state
+  const [customRules, setCustomRules] = useState([]);
+  const [userData, setUserData] = useState({});
+  const [usingCachedData, setUsingCachedData] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [dailyReflections, setDailyReflections] = useState({});
+  const [teamMember, setTeamMember] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
     const owner = user.id;
     const queue = createJournalQueue({
-      write: async (day, content) => {
+      write: async (day, draft) => {
+        const { content, season } = draft;
         if (currentUserId.current !== owner) throw new Error('Session changed');
         const { data, error } = await supabase.from('daily_reflections')
-          .upsert({ user_id: owner, day_number: Number(day), content }, { onConflict: 'user_id, day_number' })
+          .upsert({ user_id: owner, day_number: Number(day), content, season_started_at: season }, { onConflict: 'user_id, day_number' })
           .select('day_number');
         if (error || data?.length !== 1) throw error || new Error('Save not confirmed');
         if (currentUserId.current === owner) {
           try {
-            if (localStorage.getItem(draftKey(owner, day)) === content) localStorage.removeItem(draftKey(owner, day));
+            if (localStorage.getItem(draftKey(owner, day, season)) === content) localStorage.removeItem(draftKey(owner, day, season));
           } catch { /* Draft can remain until a later successful save. */ }
         }
       },
@@ -72,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     });
     journalQueue.current = queue;
     return () => { queue.close(); journalQueue.current = null; };
-  }, [user?.id]);
+  }, [user?.id, userProfile?.start_date]);
 
   useEffect(() => {
     const warn = event => {
@@ -85,72 +98,20 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('beforeunload', warn);
   }, [journalStatus]);
 
-  // Data state
-  const [customRules, setCustomRules] = useState([]);
-  const [userData, setUserData] = useState({});
-  const [usingCachedData, setUsingCachedData] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [dailyReflections, setDailyReflections] = useState({});
-  const [teamMember, setTeamMember] = useState(null);
-  
   const generateInviteCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
 
-  useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const nextId = session?.user?.id ?? null;
-      if (currentUserId.current !== nextId) {
-        journalQueue.current?.close();
-        setCustomRules([]); setUserData({}); setUserProfile(null);
-        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
-      }
-      currentUserId.current = nextId;
-      setSaveError(null);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextId = session?.user?.id ?? null;
-      if (currentUserId.current !== nextId) {
-        journalQueue.current?.close();
-        setCustomRules([]); setUserData({}); setUserProfile(null);
-        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
-      }
-      currentUserId.current = nextId;
-      setSaveError(null);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      } else {
-        // Clear data on logout
-        setCustomRules([]);
-        setUserData({});
-        setUserProfile(null);
-        setDailyReflections({});
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchUserData = async (userId) => {
+  const fetchUserData = useCallback(async (userId) => {
     const epoch = ++fetchEpoch.current;
     const current = () => epoch === fetchEpoch.current && currentUserId.current === userId;
     const editsAtStart = { ...journalEdits.current };
     const dirtyAtStart = { ...journalDirty.current };
     const restored = {};
+    const restoredSeason = activeSeason.current || readSnapshot(userId)?.userProfile?.start_date;
     for (let day = 1; day <= 60; day++) {
       try {
-        const draft = localStorage.getItem(draftKey(userId, day));
+        const draft = localStorage.getItem(draftKey(userId, day, restoredSeason));
         if (draft !== null) restored[day] = draft;
       } catch { /* Device storage may be disabled. */ }
     }
@@ -164,10 +125,10 @@ export const AuthProvider = ({ children }) => {
         .from('custom_rules')
         .select('*')
         .order('sort_order', { ascending: true });
-        
+
       if (!current()) return;
       if (rulesError) throw rulesError;
-      
+
       if (rulesData && rulesData.length > 0) {
         setCustomRules(rulesData);
       } else {
@@ -186,7 +147,7 @@ export const AuthProvider = ({ children }) => {
       const { data: progressData, error: progressError } = await supabase
         .from('user_progress')
         .select('*');
-        
+
       if (!current()) return;
       if (progressError) throw progressError;
 
@@ -198,7 +159,7 @@ export const AuthProvider = ({ children }) => {
         }
         formattedData[row.day_number][row.rule_id] = true;
       });
-      
+
       setUserData(formattedData);
       cacheSnapshot(userId, { userData: formattedData });
 
@@ -208,9 +169,16 @@ export const AuthProvider = ({ children }) => {
         .select('*')
         .eq('user_id', userId)
         .single();
-      
+
       if (!current()) return;
       if (!profileError && profileData) {
+        if (restoredSeason && restoredSeason !== profileData.start_date) {
+          journalQueue.current?.close();
+          for (const key of Object.keys(restored)) delete restored[key];
+          setDailyReflections({}); setJournalStatus({});
+          journalDirty.current = {}; journalEdits.current = {};
+        }
+        activeSeason.current = profileData.start_date;
         setUserProfile(profileData);
         cacheSnapshot(userId, { userProfile: profileData });
         if (profileData.partner_id) {
@@ -222,7 +190,7 @@ export const AuthProvider = ({ children }) => {
       const { data: reflectionData, error: reflectionError } = await supabase
         .from('daily_reflections')
         .select('*');
-      
+
       if (!current()) return;
       if (!reflectionError && reflectionData) {
         const formattedReflections = {};
@@ -249,7 +217,7 @@ export const AuthProvider = ({ children }) => {
       const cached = readSnapshot(userId);
       if (cached) {
         if (cached.userData) setUserData(cached.userData);
-        if (cached.userProfile) setUserProfile(cached.userProfile);
+        if (cached.userProfile) { activeSeason.current = cached.userProfile.start_date; setUserProfile(cached.userProfile); }
         setDailyReflections(prev => {
           const merged = { ...cached.dailyReflections, ...restored };
           for (let day = 1; day <= 60; day++) {
@@ -264,26 +232,63 @@ export const AuthProvider = ({ children }) => {
     } finally {
       if (current()) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const nextId = session?.user?.id ?? null;
+      if (currentUserId.current !== nextId) {
+        journalQueue.current?.close();
+        activeSeason.current = null;
+        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
+      }
+      currentUserId.current = nextId;
+      setSaveError(null);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for changes on auth state (logged in, signed out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextId = session?.user?.id ?? null;
+      if (currentUserId.current !== nextId) {
+        journalQueue.current?.close();
+        activeSeason.current = null;
+        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
+      }
+      currentUserId.current = nextId;
+      setSaveError(null);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      } else {
+        // Clear data on logout
+        setCustomRules([]);
+        setUserData({});
+        setUserProfile(null);
+        setDailyReflections({});
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchUserData]);
 
   const updateRules = async (newRules) => {
     if (!user) return;
-    
+
     try {
-      // First, delete existing rules for this user to avoid conflicts
-      await supabase.from('custom_rules').delete().eq('user_id', user.id);
-      
-      // Then insert new rules
-      const rulesToInsert = newRules.map((rule, index) => ({
-        id: rule.id,
-        user_id: user.id,
-        label: rule.label,
-        sort_order: index + 1
-      }));
-      
-      const { error } = await supabase.from('custom_rules').insert(rulesToInsert);
+      const rulesToInsert = newRules.map((rule, index) => ({id:rule.id,user_id:user.id,label:rule.label,sort_order:index+1}));
+      const {error} = await supabase.rpc('replace_momentum_rules',{rules:rulesToInsert});
       if (error) throw error;
-      
+
       setCustomRules(rulesToInsert);
     } catch (error) {
       console.error('Error updating rules:', error);
@@ -295,11 +300,12 @@ export const AuthProvider = ({ children }) => {
     if (!user) return { success: false };
     const key = `${user.id}:${dayIndex}:${itemId}`;
     if (progressWrites.current.has(key)) return { success: false };
+    if (!activeSeason.current) return { success: false };
     progressWrites.current.add(key);
     const isCompleted = Boolean(userData[dayIndex]?.[itemId]);
     setSaveError(null);
     try {
-      const record = { user_id: user.id, day_number: dayIndex, rule_id: itemId };
+      const record = { user_id: user.id, day_number: dayIndex, rule_id: itemId, season_started_at: activeSeason.current };
       const result = isCompleted
         ? await supabase.from('user_progress').delete().match(record).select('id')
         : await supabase.from('user_progress').insert(record).select('id');
@@ -319,10 +325,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Containment until an atomic season-archive migration has been verified.
   const resetProgress = async () => {
-    setSaveError('Starting a new season is being improved. Your current history is safe.');
-    return { success: false };
+    if (!user) return { success: false };
+    if (Object.values(journalStatus).some(state => state !== 'saved') || progressWrites.current.size) {
+      setSaveError('Save your current entries before starting another season.');
+      return { success: false };
+    }
+    if (!window.confirm('Archive this season and begin a new one? Your history will remain available in Your Journey.')) return { success: false };
+    seasonRequest.current ||= crypto.randomUUID();
+    try {
+      const { data, error } = await supabase.rpc('archive_and_start_season', { request_id: seasonRequest.current });
+      if (error || !data) throw error || new Error('Archive not confirmed');
+      seasonRequest.current = null;
+      await fetchUserData(user.id);
+      setSaveError(null);
+      return { success: true };
+    } catch {
+      setSaveError('The new season could not be confirmed. Your history has not been cleared by this app. Retry to check the same request.');
+      return { success: false };
+    }
   };
 
   const startChallenge = async (mode) => {
@@ -335,12 +356,15 @@ export const AuthProvider = ({ children }) => {
         .upsert({ user_id: user.id, accountability_mode: mode, invite_code: inviteCode, timezone }, { onConflict: 'user_id' })
         .select()
         .single();
-        
+
       if (error) throw error;
+      activeSeason.current = data.start_date;
       setUserProfile(data);
+      return { success: true };
     } catch (error) {
       console.error('Error starting challenge:', error);
-      alert('Failed to start challenge: ' + (error.message || JSON.stringify(error)));
+      setSaveError('Your season could not be started. Please retry.');
+      return { success: false };
     }
   };
 
@@ -351,9 +375,9 @@ export const AuthProvider = ({ children }) => {
         .from('user_profiles')
         .update(updates)
         .eq('user_id', user.id);
-      
+
       if (error) throw error;
-      
+
       setUserProfile(prev => ({ ...prev, ...updates }));
       return { success: true };
     } catch (error) {
@@ -368,9 +392,9 @@ export const AuthProvider = ({ children }) => {
     journalDirty.current[editKey] = true;
     journalEdits.current[editKey] = (journalEdits.current[editKey] || 0) + 1;
     setDailyReflections(prev => ({ ...prev, [dayNumber]: content }));
-    try { localStorage.setItem(draftKey(user.id, dayNumber), content); }
+    try { localStorage.setItem(draftKey(user.id, dayNumber, activeSeason.current), content); }
     catch { setSaveError('This device cannot keep an offline journal draft. Keep this page open until your entry is saved.'); }
-    journalQueue.current.enqueue(String(dayNumber), content);
+    journalQueue.current.enqueue(String(dayNumber), { content, season: activeSeason.current });
   };
 
   const retryReflection = (dayNumber) => {
@@ -406,16 +430,14 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     const owner = user?.id;
     let hasDraft = Object.values(journalStatus).some(state => state !== 'saved');
-    if (owner) for (let day = 1; day <= 60; day++) {
-      try { hasDraft ||= localStorage.getItem(draftKey(owner, day)) !== null; } catch { /* Use in-memory status. */ }
-    }
-    if (hasDraft && !window.confirm('Some journal text has not been saved online. Signing out removes this device’s drafts. Stay signed in to retry, or sign out and discard those drafts?')) return;
+    if (owner) try { hasDraft ||= Object.keys(localStorage).some(key => key.startsWith(`momentum60:draft:${owner}:`)); } catch { /* Use in-memory status. */ }
+    if (hasDraft && !window.confirm('Some journal text has not been saved online. Signing out removes this device’s drafts. Stay signed in to retry, or sign out and discard those drafts?')) return false;
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     journalQueue.current?.close();
-    if (owner) for (let day = 1; day <= 60; day++) {
-      try { localStorage.removeItem(draftKey(owner, day)); } catch { /* Storage unavailable. */ }
-    }
+    await cancelDailyReminder();
+    if (owner) try { for (const key of Object.keys(localStorage)) if (key.startsWith(`momentum60:draft:${owner}:`)) localStorage.removeItem(key); } catch { /* Storage unavailable. */ }
+    return true;
   };
 
   const resetPassword = async (email) => {
@@ -424,7 +446,7 @@ export const AuthProvider = ({ children }) => {
     });
     if (error) throw error;
   };
-  
+
   const updatePassword = async (newPassword) => {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
@@ -434,9 +456,9 @@ export const AuthProvider = ({ children }) => {
     if (!user) return { success: false, message: 'Not logged in' };
     try {
       const { data, error } = await supabase.rpc('link_partner_by_code', { friend_code: friendCode });
-      
+
       if (error) throw error;
-      
+
       if (data === true) {
         // Fetch updated profile
         await fetchUserData(user.id);
@@ -457,9 +479,9 @@ export const AuthProvider = ({ children }) => {
         .from('user_profiles')
         .update({ partner_id: null })
         .eq('user_id', user.id);
-      
+
       if (error) throw error;
-      
+
       setTeamMember(null);
       await fetchUserData(user.id);
     } catch (error) {
@@ -469,6 +491,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    refreshData: () => user && fetchUserData(user.id),
     saveError,
     loading,
     customRules,

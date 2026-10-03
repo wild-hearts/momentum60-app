@@ -1,11 +1,18 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "crons": [
     {
       "path": "/api/remind",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/reconcile-billing",
+      "schedule": "15 * * * *"
     }
   ]
 }

@@ -1,0 +1,4 @@
+import {createClient} from '@supabase/supabase-js';
+import {reconcileNative} from './_lib/nativeAccess.js';
+import {requestBody} from './_lib/billing.js';
+export default async function handler(req,res){if(req.method!=='POST')return res.status(405).end();if(!process.env.REVENUECAT_WEBHOOK_TOKEN||req.headers.authorization!==`Bearer ${process.env.REVENUECAT_WEBHOOK_TOKEN}`)return res.status(401).end();try{const event=requestBody(req).event;const users=[event?.app_user_id,...(event?.transferred_from||[]),...(event?.transferred_to||[])].filter(id=>typeof id==='string'&&/^[a-f\d-]{36}$/i.test(id));const db=createClient(process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}});for(const id of new Set(users))await reconcileNative(db,id);return res.json({received:true})}catch{return res.status(503).json({error:'Native receipt reconciliation failed; retry required'})}}

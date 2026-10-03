@@ -1,83 +1,8 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import {Link,useNavigate} from 'react-router-dom';
+import {useAuth} from '../context/AuthContext';
 import './Navbar.css';
-
-function Navbar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-
-  // Marketing links (FAQ / Books / Tools / Install) only appear on the public pages,
-  // never inside the app screens. The brand logo always links Home.
-  const marketingPages = ['/', '/faq', '/books', '/tools', '/install'];
-  const showMarketingLinks = marketingPages.includes(location.pathname);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <Link to="/">Momentum 60</Link>
-      </div>
-      <ul className="navbar-links">
-        {showMarketingLinks && (
-          <>
-            <li>
-              <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-            </li>
-            <li>
-              <Link to="/faq" className={location.pathname === '/faq' ? 'active' : ''}>FAQ</Link>
-            </li>
-            <li>
-              <Link to="/books" className={location.pathname === '/books' ? 'active' : ''}>The Books</Link>
-            </li>
-            <li>
-              <Link to="/tools" className={location.pathname === '/tools' ? 'active' : ''}>Tools</Link>
-            </li>
-            {!window.Capacitor?.isNativePlatform?.() && (
-              <li>
-                <Link to="/install" className={location.pathname === '/install' ? 'active' : ''}>Install App</Link>
-              </li>
-            )}
-          </>
-        )}
-        {user ? (
-          <>
-            <li>
-              <Link to="/insights" className={location.pathname === '/insights' ? 'active' : ''}>Insights</Link>
-            </li>
-            <li>
-              <Link to="/rules" className={location.pathname === '/rules' ? 'active' : ''}>My Rules</Link>
-            </li>
-            <li>
-              <Link to="/team" className={location.pathname === '/team' ? 'active' : ''}>Team Up</Link>
-            </li>
-            <li>
-              <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>Settings</Link>
-            </li>
-            <li>
-              <Link to="/app" className={`nav-cta ${location.pathname === '/app' ? 'active' : ''}`}>Tracker</Link>
-            </li>
-            <li>
-              <button onClick={handleSignOut} className="nav-cta" style={{ background: 'transparent', border: '1px solid #E1A756', color: '#E1A756', cursor: 'pointer' }}>Sign Out</button>
-            </li>
-          </>
-        ) : (
-          <li>
-            <Link to="/auth" className="nav-cta">Sign In</Link>
-          </li>
-        )}
-      </ul>
-    </nav>
-  );
+export default function Navbar(){
+ const{user,signOut}=useAuth();const navigate=useNavigate();
+ async function leave(){try{if(await signOut()!==false)navigate('/');}catch{window.alert('Sign out could not be completed. Please retry.');}}
+ return <nav className="navbar" aria-label="Main navigation"><div className="navbar-brand"><Link to={user?'/app':'/'}>Momentum 60</Link></div><ul className="navbar-links"><li><Link className="nav-cta" to={user?'/app':'/auth'}>{user?'Today':'Sign in'}</Link></li><li><details className="nav-menu"><summary>Menu</summary><div className="nav-menu-panel" onClick={event=>{if(event.target.closest('a'))event.currentTarget.parentElement.open=false}}>{user&&<><Link to="/calendar">Season calendar</Link><Link to="/music">Album</Link><Link to="/summary">Journey and journal</Link><Link to="/settings">Settings and billing</Link><Link to="/tracker">Legacy tracker and rewards</Link><Link to="/rules">Legacy rules</Link><Link to="/team">Team up</Link></>}<Link to="/faq">Help</Link><Link to="/books">The books</Link><Link to="/tools">Tools</Link><Link to="/">About Momentum 60</Link>{user&&<button type="button" onClick={leave}>Sign out</button>}</div></details></li></ul></nav>;
 }
-
-export default Navbar;

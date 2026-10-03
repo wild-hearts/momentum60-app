@@ -21,3 +21,8 @@ export function seasonCalendar({ startDate, today, pausedDates = [], outageDates
   const activeDays = elapsedDays - skipped;
   return { day: Math.min(60, Math.max(0, activeDays)), elapsedDays, ended: activeDays > 60, suspended: excluded.has(today) };
 }
+export function pausedDates(profile,today) {
+ const dates=new Set(profile?.paused_dates || []);
+ if(profile?.paused_since){const from=ordinal(profile.paused_since),to=ordinal(today);if(to-from>36500)throw Error('Pause is outside the supported date range');for(let n=from;n<=to;n++)dates.add(new Date(n*DAY).toISOString().slice(0,10));}
+ return [...dates];
+}

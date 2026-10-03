@@ -22,6 +22,7 @@ function Landing() {
             height="320"
           />
           <h1 className="visually-hidden">Momentum 60</h1>
+        <p>A$4.99/month. Full programme, music and future seasons. Renews monthly until cancelled.</p>
           <h2 className="landing-eyebrow">The Non-Zero Challenge</h2>
           <p className="landing-subtitle">
             A transformative 60-day program to build courage as a habit, survive the messy middle, and put your soul back in the driver's seat.

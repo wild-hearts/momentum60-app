@@ -1,99 +1,13 @@
-import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-
-function JourneySummary() {
-  const navigate = useNavigate();
-  const { userProfile, dailyReflections } = useContext(AuthContext);
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (userProfile?.accountability_mode !== 'journal') {
-    return (
-      <div className="app-container" style={{ textAlign: 'center', paddingTop: '10rem' }}>
-        <h2>Journal Mode is not active.</h2>
-        <p>You selected the Honor System for your challenge.</p>
-        <button className="cta-button primary" onClick={() => navigate('/app')} style={{ marginTop: '2rem' }}>Back to Tracker</button>
-      </div>
-    );
-  }
-
-  const daysArray = Array.from({ length: 60 }, (_, i) => i + 1);
-
-  const getCalendarDate = (dayNum) => {
-    if (!userProfile?.start_date) return '';
-    const date = new Date(userProfile.start_date);
-    date.setDate(date.getDate() + (dayNum - 1));
-    return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  return (
-    <div className="app-container summary-page">
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; color: black !important; }
-          .summary-card { break-inside: avoid; border: 1px solid #ccc !important; background: white !important; color: black !important; box-shadow: none !important; }
-          .summary-text { color: black !important; }
-          .header h1 { background: none !important; color: black !important; -webkit-text-fill-color: black !important; }
-          * { text-shadow: none !important; }
-        }
-      `}</style>
-
-      <header className="header no-print">
-        <h1 style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>Your Journey</h1>
-        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>The complete chronicle of your Momentum 60 challenge.</p>
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <button className="cta-button" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--accent-color)', color: 'var(--text-primary)' }} onClick={() => navigate('/app')}>Back to Tracker</button>
-          <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)' }} onClick={handlePrint}>Print / Save as PDF</button>
-        </div>
-      </header>
-
-      <div className="print-header" style={{ display: 'none' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Momentum 60: Journey Summary</h1>
-      </div>
-
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        {daysArray.map((dayNum) => {
-          const content = dailyReflections[dayNum];
-          const hasContent = content && content.trim().length > 0;
-          const dateStr = getCalendarDate(dayNum);
-
-          return (
-            <div key={dayNum} className="summary-card" style={{ 
-              background: 'rgba(255, 255, 255, 0.05)', 
-              border: '1px solid rgba(255, 255, 255, 0.1)', 
-              borderRadius: '16px', 
-              padding: '2rem',
-              textAlign: 'left',
-              position: 'relative'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', color: '#E1A756', margin: 0 }}>Day {dayNum}</h3>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{dateStr}</span>
-              </div>
-              
-              {hasContent ? (
-                <div className="summary-text" style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
-                  {content}
-                </div>
-              ) : (
-                <div style={{ fontStyle: 'italic', color: 'var(--text-secondary)', opacity: 0.5 }}>
-                  No reflection recorded for this day.
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      
-      <div className="no-print" style={{ textAlign: 'center', marginTop: '4rem', paddingBottom: '2rem' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>End of Document</p>
-      </div>
-    </div>
-  );
+import { supabase } from '../supabaseClient';
+export default function JourneySummary() {
+ const {user,userData,dailyReflections}=useContext(AuthContext);
+ const [archives,setArchives]=useState([]),[error,setError]=useState('');
+ useEffect(()=>{let active=true;supabase.from('momentum_season_archives').select('id,archived_at,progress,reflections').eq('user_id',user.id).order('archived_at',{ascending:false}).then(({data,error})=>{if(active){if(error)setError('Archived seasons could not be loaded. Your current journal is still available.');else setArchives(data||[])}});return()=>{active=false}},[user.id]);
+ const [deviceDrafts]=useState(()=>{try{const prefix=`momentum60:draft:${user.id}:`;return Object.keys(localStorage).filter(key=>key.startsWith(prefix)).map(key=>({key,label:key.slice(prefix.length),text:localStorage.getItem(key)}));}catch{return [];}});
+ const days=Object.keys(userData).filter(day=>Object.values(userData[day]).some(Boolean)).length;
+ const entries=Object.entries(dailyReflections).filter(([,text])=>text?.trim());
+ return <main className="app-container"><h1>Your Journey</h1><p>{days} action days in this season. Reflections are optional.</p><Link to="/app">Back to today</Link><button type="button" className="cta-button" onClick={()=>window.print()}>Print / save as PDF</button><p role="status">{error}</p><section aria-label="Current reflections">{entries.length===0?<p>No reflections yet. Your recorded actions still count.</p>:entries.map(([day,text])=><article key={day}><h2>Day {day}</h2><p style={{whiteSpace:'pre-wrap'}}>{text}</p></article>)}</section><section><h2>Unsaved drafts on this device</h2><p>These copies may belong to an earlier season. Copy any text you want to keep before signing out.</p>{deviceDrafts.map(draft=><article key={draft.key}><h3>Draft {draft.label}</h3><textarea readOnly aria-label="Recovered device draft" value={draft.text} rows={5} style={{width:"100%"}}/></article>)}</section><h2>Previous seasons</h2>{archives.map(season=><details key={season.id}><summary>Season archived {new Date(season.archived_at).toLocaleDateString()} · {new Set(season.progress.map(row=>row.day_number)).size} action days</summary>{season.reflections.filter(row=>row.content?.trim()).map(row=><article key={row.day_number}><h3>Day {row.day_number}</h3><p style={{whiteSpace:'pre-wrap'}}>{row.content}</p></article>)}</details>)}</main>;
 }
-
-export default JourneySummary;

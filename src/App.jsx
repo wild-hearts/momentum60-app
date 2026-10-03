@@ -4,6 +4,9 @@ import InstallPWA from './components/InstallPWA';
 import Navbar from './pages/Navbar';
 import Landing from './pages/Landing';
 import Tracker from './pages/Tracker';
+import Today from './pages/Today';
+import Calendar from './pages/Calendar';
+import Music from './pages/Music';
 import FAQ from './pages/FAQ';
 import Books from './pages/Books';
 import Auth from './pages/Auth';
@@ -12,6 +15,7 @@ import Insights from './pages/Insights';
 import CustomRules from './pages/CustomRules';
 import JourneySummary from './pages/JourneySummary';
 import Settings from './pages/Settings';
+import Subscribe, { SubscriptionGate } from './pages/Subscribe';
 import Tools from './pages/Tools';
 import InstallInstructions from './pages/InstallInstructions';
 import UpdatePassword from './pages/UpdatePassword';
@@ -40,8 +44,11 @@ function App() {
         <Route path="/update-password" element={<UpdatePassword />} />
         
         {/* Protected Routes */}
-        <Route path="/app" element={<ProtectedRoute><Tracker /></ProtectedRoute>} />
-        <Route path="/tracker" element={<ProtectedRoute><Tracker /></ProtectedRoute>} />
+        <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
+        <Route path="/app" element={<ProtectedRoute><SubscriptionGate><Today /></SubscriptionGate></ProtectedRoute>} />
+        <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+        <Route path="/music" element={<ProtectedRoute><SubscriptionGate><Music /></SubscriptionGate></ProtectedRoute>} />
+        <Route path="/tracker" element={<ProtectedRoute><SubscriptionGate><Tracker /></SubscriptionGate></ProtectedRoute>} />
         <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
         <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="/rules" element={<ProtectedRoute><CustomRules /></ProtectedRoute>} />

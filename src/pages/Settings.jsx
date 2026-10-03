@@ -1,6 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Settings as SettingsIcon, Bell, Globe, AlertTriangle } from 'lucide-react';
+import { billingRequest } from '../lib/billingClient';
 import { supabase } from '../supabaseClient';
 import {
   isNative,
@@ -12,40 +14,34 @@ import './Landing.css';
 
 function Settings() {
   const { userProfile, updateProfileSettings } = useContext(AuthContext);
-  
-  const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState('18:00');
-  const [timezone, setTimezone] = useState('');
+
+  const [reminderEnabled, setReminderEnabled] = useState(userProfile?.reminder_enabled || false);
+  const [reminderTime, setReminderTime] = useState(userProfile?.reminder_time || '18:00');
+  const [timezone, setTimezone] = useState(userProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [deleteText, setDeleteText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const native = isNative();
-
-  useEffect(() => {
-    if (userProfile) {
-      setReminderEnabled(userProfile.reminder_enabled || false);
-      setReminderTime(userProfile.reminder_time || '18:00');
-      setTimezone(userProfile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
-    }
-  }, [userProfile]);
+  const [sounds,setSounds]=useState(()=>{try{return localStorage.getItem('momentum60:sounds')==='on'}catch{return false}});
 
   const handleSave = async (e) => {
     e.preventDefault();
+    try { new Intl.DateTimeFormat('en',{timeZone:timezone}).format(); } catch { setMessage('Enter a valid timezone, such as Australia/Sydney.'); return; }
     setIsSaving(true);
     setMessage('');
-    
+
     const { success } = await updateProfileSettings({
       reminder_enabled: reminderEnabled,
       reminder_time: reminderTime,
       timezone: timezone
     });
-    
+
     // On the phone the reminder is a real notification held by iOS, so the
     // save has to schedule or cancel it, not just record a preference.
     let deviceNote = '';
-    if (native) {
+    if (native && success) {
       if (reminderEnabled) {
         const allowed = await requestPermission();
         if (allowed) {
@@ -55,7 +51,7 @@ function Settings() {
             : ' Saved, but the reminder could not be scheduled on this device.';
         } else {
           deviceNote =
-            ' Saved. Notifications are turned off for this app, so nothing will appear until you allow them in iOS Settings.';
+            ' Saved. Notifications are turned off for this app, so nothing will appear until you allow them in your phone’s notification settings.';
         }
       } else {
         await cancelDailyReminder();
@@ -72,21 +68,11 @@ function Settings() {
     }
   };
 
-  /**
-   * Deleting the account. Apple requires this inside any app that lets people
-   * create one, and it is the right thing to offer regardless.
-   *
-   * The work happens in one Postgres function, delete_own_account, which runs
-   * as its owner and removes this user's rows from all four tables and then
-   * the login itself. Doing it that way means no service key has to exist
-   * anywhere near the app.
-   */
   const handleDelete = async () => {
     setDeleteError('');
     setIsDeleting(true);
     try {
-      const { error } = await supabase.rpc('delete_own_account');
-      if (error) throw error;
+      await billingRequest('delete-account');
       await cancelDailyReminder();
       await supabase.auth.signOut();
       window.location.href = '/';
@@ -94,7 +80,7 @@ function Settings() {
       console.error('account deletion failed', e);
       setIsDeleting(false);
       setDeleteError(
-        'That did not work. Nothing has been deleted. Email info@themomentumrule.com and it will be done by hand.'
+        'We could not confirm account deletion. Your subscription may already be cancelled. Email info@themomentumrule.com and it will be done by hand.'
       );
     }
   };
@@ -108,8 +94,10 @@ function Settings() {
           <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>Configure your personalised daily reminders.</p>
         </div>
 
+        <section><h2>Sound effects</h2><label><input type="checkbox" checked={sounds} onChange={e=>{setSounds(e.target.checked);try{localStorage.setItem('momentum60:sounds',e.target.checked?'on':'off')}catch{setMessage('Sound preference could not be saved on this device.')}}}/> Play short confirmation sounds on this device</label><p>Music is controlled separately. All action and save confirmations also appear as text.</p></section>
+        <section><h2>Subscription</h2><p>Programme progress and billing are separate. Cancelling renewal does not erase your saved history.</p><button type="button" className="cta-button" onClick={async()=>{try{if(native){window.location.href = Capacitor.getPlatform()==='ios'?'https://apps.apple.com/account/subscriptions':'https://play.google.com/store/account/subscriptions';}else{const {url}=await billingRequest('billing-portal');window.location.assign(url)}}catch(e){setMessage(e.message)}}}>Manage subscription</button></section>
         <form onSubmit={handleSave} className="rule-card" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '2rem' }}>
             <div>
               <h3 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
@@ -122,15 +110,15 @@ function Settings() {
                   : "Receive an email if you haven't completed your daily task."}
               </p>
             </div>
-            <label
+            <button type="button" aria-label="Daily reminders"
               role="switch"
               aria-checked={reminderEnabled}
               onClick={() => setReminderEnabled(!reminderEnabled)}
               style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}
             >
-              <span style={{ 
-                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
-                backgroundColor: reminderEnabled ? '#E1A756' : '#4b5563', transition: '.4s', borderRadius: '34px' 
+              <span style={{
+                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: reminderEnabled ? '#E1A756' : '#4b5563', transition: '.4s', borderRadius: '34px'
               }}>
                 <span style={{
                   position: 'absolute', content: '""', height: '26px', width: '26px', left: '4px', bottom: '4px',
@@ -138,14 +126,14 @@ function Settings() {
                   transform: reminderEnabled ? 'translateX(26px)' : 'translateX(0)'
                 }}></span>
               </span>
-            </label>
+            </button>
           </div>
 
           <div style={{ opacity: reminderEnabled ? 1 : 0.5, pointerEvents: reminderEnabled ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Reminder Time</label>
-              <input 
-                type="time" 
+              <label htmlFor="reminder-time" style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Reminder Time</label>
+              <input
+                id="reminder-time" type="time" disabled={!reminderEnabled}
                 value={reminderTime}
                 onChange={(e) => setReminderTime(e.target.value)}
                 style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1.25rem' }}
@@ -153,12 +141,12 @@ function Settings() {
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+              <label htmlFor="reminder-timezone" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
                 <Globe size={18} />
                 Timezone
               </label>
-              <input 
-                type="text" 
+              <input
+                id="reminder-timezone" type="text"
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
                 style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'var(--text-secondary)', fontSize: '1rem' }}
@@ -205,7 +193,7 @@ function Settings() {
           </h3>
           <p style={{ color: 'var(--text-secondary)', marginTop: 0 }}>
             This removes your login, your streak, your reflections and your custom
-            rules. It happens immediately and cannot be undone.
+            rules, including archived seasons. It happens immediately and cannot be undone. Web renewals are cancelled first. Apple or Google subscriptions must be cancelled in your store account using Manage subscription above.
           </p>
           <label
             htmlFor="delete-confirm"

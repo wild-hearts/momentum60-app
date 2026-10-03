@@ -8,7 +8,9 @@ import { motivationalQuotes } from '../data/quotes';
 import { dailySongs, SONGS_BASE_URL } from '../data/songs';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
+import AccessibleDialog from '../components/AccessibleDialog';
 import { progressSummary } from '../lib/progressSummary';
+import { localDate, seasonCalendar, pausedDates } from '../lib/seasonCalendar';
 import './Tracker.css';
 
 function Tracker() {
@@ -32,19 +34,12 @@ function Tracker() {
     return customRules.some(rule => dayData[rule.id] === true || dayData[rule.id] === 'true'); // Handle supabase booleans/strings
   };
 
-  const getActiveDay = () => {
-    if (!userProfile?.start_date) return 1;
-    const start = new Date(userProfile.start_date);
-    start.setHours(0,0,0,0);
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    const diffTime = Math.abs(now - start);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return Math.min(diffDays + 1, 60);
-  };
+  const zone = userProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const calendar = userProfile?.start_date ? seasonCalendar({
+    startDate: localDate(new Date(userProfile.start_date), zone), today: localDate(new Date(), zone), pausedDates: pausedDates(userProfile, localDate(new Date(), zone))
+  }) : { day: 1, ended: false };
+  const activeCalendarDay = Math.max(1, calendar.day);
 
-  const activeCalendarDay = getActiveDay();
-  
   // Calculate Mascot state based on active calendar day
   const currentDayData = userData[activeCalendarDay] || {};
   const isFed = customRules.some(rule => currentDayData[rule.id]);
@@ -78,7 +73,7 @@ function Tracker() {
   };
 
   const toggleRule = async (ruleId) => {
-    if (selectedDay !== activeCalendarDay) return; // Cannot edit past days
+    if (calendar.ended || calendar.suspended || selectedDay !== activeCalendarDay) return; // Cannot edit past days
     
     playClick();
     
@@ -122,12 +117,12 @@ function Tracker() {
         var duration = 3000;
         var end = Date.now() + duration;
         (function frame() {
-          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
-          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+          confetti({ disableForReducedMotion: true, particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+          confetti({ disableForReducedMotion: true, particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
           if (Date.now() < end) requestAnimationFrame(frame);
         }());
       } else {
-         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+         confetti({ disableForReducedMotion: true, particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
       }
       
       // Delay the quote modal slightly so confetti has time to pop
@@ -312,7 +307,7 @@ function Tracker() {
         </div>
       </section>
 
-      {returning && (
+      {returning && !calendar.ended && (
         <section aria-labelledby="return-title" style={{ padding: '1.5rem', border: '1px solid #E1A756', borderRadius: '12px', marginBottom: '1rem' }}>
           <h2 id="return-title">You can return today.</h2>
           <p>Your previous progress is still here. Choose one small action you can manage today. You do not need to make up the missed days.</p>
@@ -320,6 +315,7 @@ function Tracker() {
         </section>
       )}
 
+      {calendar.ended && <section aria-labelledby="complete-title"><h2 id="complete-title">This season is complete.</h2><p>You recorded {completedCount} action days. Keep the practice that helped, or begin again with a different focus. Your previous season will be saved.</p><button type="button" className="cta-button" onClick={handleStartOver}>Keep my practices in a new season</button><button type="button" className="cta-button" onClick={() => navigate('/summary')}>Review my journey</button></section>}
       <section className="progress-section" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <div className="progress-bar-container">
@@ -459,7 +455,7 @@ function Tracker() {
 
       {selectedDay && (
         <div className="modal-overlay" onClick={() => setSelectedDay(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Daily actions" onClose={() => setSelectedDay(null)} className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => { playClick(); setSelectedDay(null); }}>
               &times;
             </button>
@@ -500,8 +496,8 @@ function Tracker() {
                     key={rule.id}
                     role="checkbox"
                     aria-checked={Boolean(isRuleDone)}
-                    aria-disabled={selectedDay !== activeCalendarDay}
-                    tabIndex={selectedDay === activeCalendarDay ? 0 : -1}
+                    aria-disabled={calendar.ended || selectedDay !== activeCalendarDay}
+                    tabIndex={!calendar.ended && selectedDay === activeCalendarDay ? 0 : -1}
                     onKeyDown={event => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); toggleRule(rule.id); } }}
                     className={`rule-check-item ${isRuleDone ? 'done' : ''}`}
                     onClick={() => toggleRule(rule.id)}
@@ -566,14 +562,14 @@ function Tracker() {
             >
               {isDayCompleted(selectedDay) ? 'All Done! Close Modal' : 'Close'}
             </button>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 
       {/* Quote Modal */}
       {quoteModal.show && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setQuoteModal({ show: false, quote: '' })}>
-          <div className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Action saved" onClose={() => setQuoteModal({ show: false, quote: '' })} className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Day Completed
             </h2>
@@ -587,14 +583,14 @@ function Tracker() {
             >
               Continue building momentum
             </button>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 
       {/* Reward Claim Modal */}
       {rewardModal && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setRewardModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Legacy reward request" onClose={() => setRewardModal(false)} className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setRewardModal(false)}>&times;</button>
             <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Claim Your Personal Song
@@ -635,7 +631,7 @@ function Tracker() {
                 Send Request to The Winks
               </button>
             </form>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 

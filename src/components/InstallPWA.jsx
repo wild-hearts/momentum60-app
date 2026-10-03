@@ -4,26 +4,12 @@ import { Download, X } from 'lucide-react';
 function InstallPWA() {
   const [supportsPWA, setSupportsPWA] = useState(false);
   const [promptInstall, setPromptInstall] = useState(null);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isIOS] = useState(() => /iPad|iPhone/.test(navigator.userAgent) && /WebKit/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent));
+  const [isStandalone] = useState(() => Boolean(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone || window.Capacitor?.isNativePlatform?.()));
   const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
-    // Check if it's already installed (standalone mode) or running inside the native Capacitor shell
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.Capacitor?.isNativePlatform?.()) {
-      setIsStandalone(true);
-      return;
-    }
-
-    // Detect iOS Safari
-    const ua = window.navigator.userAgent;
-    const webkit = !!ua.match(/WebKit/i);
-    const isIOSDevice = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
-    const isSafari = isIOSDevice && webkit && !ua.match(/CriOS/i);
-    
-    if (isIOSDevice && isSafari) {
-      setIsIOS(true);
-    }
+    if (isStandalone) return;
 
     // Detect Chrome/Android PWA prompt
     const handler = (e) => {
@@ -34,7 +20,7 @@ function InstallPWA() {
 
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isStandalone]);
 
   const onClickInstall = async () => {
     if (!promptInstall) return;

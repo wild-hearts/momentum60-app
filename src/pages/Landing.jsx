@@ -47,7 +47,7 @@ function Landing() {
 
       <section className="landing-rules">
         <h2>The 5 Rules of Momentum 60</h2>
-        <p className="rules-intro">The only rule is forward momentum. A smaller version still counts. Complete at least ONE task a day. If you have a zero day, you start over at Day 1.</p>
+        <p className="rules-intro">Choose one manageable action today. A smaller version still counts. If you miss a day, return when you can—your earlier progress stays with you.</p>
         
         <div className="rules-grid">
           {dailyRules.map((rule, idx) => (

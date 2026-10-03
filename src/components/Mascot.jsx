@@ -78,7 +78,7 @@ function Mascot({ unlockedDays, isTodayCompleted }) {
         }}></div>
       </div>
       <small style={{ display: 'block', marginTop: '0.5rem', color: isTodayCompleted ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>
-        {isTodayCompleted ? "Fed today! Maximum Momentum." : "Hungry. Complete a task to feed."}
+        {isTodayCompleted ? "You made time for an action today." : "Your companion is here whenever you return."}
       </small>
     </div>
   );

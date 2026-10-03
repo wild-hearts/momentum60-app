@@ -11,9 +11,9 @@ function FAQ() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', textAlign: 'left' }}>
           
           <div>
-            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>What happens if I fail or miss a day?</h3>
+            <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>What happens if I miss a day?</h3>
             <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              You start over at Day 1. However, to keep the chain alive, you only need to complete <strong>at least one</strong> of the 5 daily rules. Even some progress is better than none. A smaller version still counts. But if you have a true "zero day" where you do absolutely nothing, you hit the Fail button and you start over.
+              Your saved progress stays with you. Return to today and choose <strong>one manageable action</strong>. A missed day remains a missed day in your history; it does not erase earlier actions or force a restart. There is no catch-up requirement.
             </p>
           </div>
 

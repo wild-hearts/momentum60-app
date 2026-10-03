@@ -59,6 +59,12 @@
 }
 
 .cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  text-align: center;
+  text-decoration: none;
   padding: 1.25rem 3rem;
   font-size: 1.25rem;
   font-weight: 700;

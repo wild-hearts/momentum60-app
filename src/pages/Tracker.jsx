@@ -12,7 +12,7 @@ import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { user, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
+  const { user, saveError, journalStatus, retryReflection, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
   const [rewardModal, setRewardModal] = useState(false);
@@ -117,7 +117,8 @@ function Tracker() {
   };
 
   const handleStartOver = async () => {
-    await resetProgress();
+    const result = await resetProgress();
+    if (!result?.success) return;
     setSelectedDay(null);
     setHasFailed(false);
     setFailedDay(null);
@@ -142,7 +143,8 @@ function Tracker() {
     const wasAnyDone = customRules.some(r => dayData[r.id]);
     
     // Call Supabase update function
-    await toggleDayItem(selectedDay, ruleId);
+    const result = await toggleDayItem(selectedDay, ruleId);
+    if (!result?.success) return;
     
     // Determine new visual state for confetti
     const isNowDone = !dayData[ruleId];
@@ -304,6 +306,7 @@ function Tracker() {
 
   return (
     <div className="app-container">
+      <p role="status" aria-live="polite">{saveError}</p>
       {/* Shown only when the last load came from the cached copy, so a tunnel
           or a dead wifi reads as "offline" rather than "your streak is gone". */}
       {usingCachedData && (
@@ -588,6 +591,9 @@ function Tracker() {
                   rows="5"
                   style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem', resize: 'vertical' }}
                 />
+                <p role="status" aria-live="polite">{{pending:'Waiting to save…',saving:'Saving…',saved:'Saved.',failed:'Not saved online. Keep this page open and retry.',restored:'Recovered draft. Review and save.'}[journalStatus[selectedDay]] || ''}</p>
+                {['failed','restored'].includes(journalStatus[selectedDay]) && <button type="button" onClick={() => retryReflection(selectedDay)}>Save journal entry</button>}
+
               </div>
             )}
 

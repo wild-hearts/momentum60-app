@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import { createJournalQueue } from '../lib/journalQueue';
 
 export const AuthContext = createContext();
 
@@ -37,6 +38,53 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  const currentUserId = useRef(null);
+  const progressWrites = useRef(new Set());
+  const [saveError, setSaveError] = useState(null);
+
+  const journalQueue = useRef(null);
+  const fetchEpoch = useRef(0);
+  const journalEdits = useRef({});
+  const journalDirty = useRef({});
+  const [journalStatus, setJournalStatus] = useState({});
+  const draftKey = (id, day) => `momentum60:draft:${id}:${day}`;
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const owner = user.id;
+    const queue = createJournalQueue({
+      write: async (day, content) => {
+        if (currentUserId.current !== owner) throw new Error('Session changed');
+        const { data, error } = await supabase.from('daily_reflections')
+          .upsert({ user_id: owner, day_number: Number(day), content }, { onConflict: 'user_id, day_number' })
+          .select('day_number');
+        if (error || data?.length !== 1) throw error || new Error('Save not confirmed');
+        if (currentUserId.current === owner) {
+          try {
+            if (localStorage.getItem(draftKey(owner, day)) === content) localStorage.removeItem(draftKey(owner, day));
+          } catch { /* Draft can remain until a later successful save. */ }
+        }
+      },
+      status: (day, state) => {
+        if (state === 'saved') delete journalDirty.current[`${owner}:${day}`];
+        if (currentUserId.current === owner) setJournalStatus(prev => ({ ...prev, [day]: state }));
+      }
+    });
+    journalQueue.current = queue;
+    return () => { queue.close(); journalQueue.current = null; };
+  }, [user?.id]);
+
+  useEffect(() => {
+    const warn = event => {
+      if (Object.values(journalStatus).some(state => state !== 'saved')) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [journalStatus]);
+
   // Data state
   const [customRules, setCustomRules] = useState([]);
   const [userData, setUserData] = useState({});
@@ -52,6 +100,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
+      const nextId = session?.user?.id ?? null;
+      if (currentUserId.current !== nextId) {
+        journalQueue.current?.close();
+        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
+      }
+      currentUserId.current = nextId;
+      setSaveError(null);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
@@ -62,6 +118,14 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for changes on auth state (logged in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextId = session?.user?.id ?? null;
+      if (currentUserId.current !== nextId) {
+        journalQueue.current?.close();
+        setCustomRules([]); setUserData({}); setUserProfile(null);
+        setDailyReflections({}); setTeamMember(null); setJournalStatus({}); setUsingCachedData(false);
+      }
+      currentUserId.current = nextId;
+      setSaveError(null);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
@@ -79,6 +143,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserData = async (userId) => {
+    const epoch = ++fetchEpoch.current;
+    const current = () => epoch === fetchEpoch.current && currentUserId.current === userId;
+    const editsAtStart = { ...journalEdits.current };
+    const dirtyAtStart = { ...journalDirty.current };
+    const restored = {};
+    for (let day = 1; day <= 60; day++) {
+      try {
+        const draft = localStorage.getItem(draftKey(userId, day));
+        if (draft !== null) restored[day] = draft;
+      } catch { /* Device storage may be disabled. */ }
+    }
+    if (!current()) return;
+    setDailyReflections(prev => ({ ...restored, ...prev }));
+    setJournalStatus(prev => ({ ...prev, ...Object.fromEntries(Object.keys(restored).map(day => [day, 'restored'])) }));
     setLoading(true);
     try {
       // Fetch Rules
@@ -87,6 +165,7 @@ export const AuthProvider = ({ children }) => {
         .select('*')
         .order('sort_order', { ascending: true });
         
+      if (!current()) return;
       if (rulesError) throw rulesError;
       
       if (rulesData && rulesData.length > 0) {
@@ -108,6 +187,7 @@ export const AuthProvider = ({ children }) => {
         .from('user_progress')
         .select('*');
         
+      if (!current()) return;
       if (progressError) throw progressError;
 
       // Transform array into nested object format: { dayNumber: { ruleId: true } }
@@ -129,6 +209,7 @@ export const AuthProvider = ({ children }) => {
         .eq('user_id', userId)
         .single();
       
+      if (!current()) return;
       if (!profileError && profileData) {
         setUserProfile(profileData);
         cacheSnapshot(userId, { userProfile: profileData });
@@ -142,30 +223,46 @@ export const AuthProvider = ({ children }) => {
         .from('daily_reflections')
         .select('*');
       
+      if (!current()) return;
       if (!reflectionError && reflectionData) {
         const formattedReflections = {};
         reflectionData.forEach(row => {
           formattedReflections[row.day_number] = row.content;
         });
-        setDailyReflections(formattedReflections);
+        setUsingCachedData(false);
         cacheSnapshot(userId, { dailyReflections: formattedReflections });
+        setDailyReflections(prev => {
+          if (!current()) return prev;
+          for (let day = 1; day <= 60; day++) {
+            if (dirtyAtStart[`${userId}:${day}`] || journalDirty.current[`${userId}:${day}`] || journalEdits.current[`${userId}:${day}`] !== editsAtStart[`${userId}:${day}`]) {
+              formattedReflections[day] = prev[day] ?? '';
+            } else if (Object.hasOwn(restored, day)) {
+              formattedReflections[day] = restored[day];
+            }
+          }
+          return formattedReflections;
+        });
       }
 
-    } catch (error) {
-      // Offline, or Supabase unreachable. A streak app that shows an empty
-      // grid when the train goes into a tunnel looks like it lost your
-      // progress, which is the one thing it must never look like. Fall back
-      // to the last good copy and carry on read-only.
-      console.error('Error fetching user data:', error);
+    } catch {
+      if (!current()) return;
       const cached = readSnapshot(userId);
       if (cached) {
         if (cached.userData) setUserData(cached.userData);
         if (cached.userProfile) setUserProfile(cached.userProfile);
-        if (cached.dailyReflections) setDailyReflections(cached.dailyReflections);
+        setDailyReflections(prev => {
+          const merged = { ...cached.dailyReflections, ...restored };
+          for (let day = 1; day <= 60; day++) {
+            if (dirtyAtStart[`${userId}:${day}`] || journalDirty.current[`${userId}:${day}`] || journalEdits.current[`${userId}:${day}`] !== editsAtStart[`${userId}:${day}`]) merged[day] = prev[day] ?? '';
+          }
+          return merged;
+        });
         setUsingCachedData(true);
       }
+      if (current()) setSaveError('Your saved data could not be loaded. Recovered drafts remain available on this device.');
+
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
   };
 
@@ -195,60 +292,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   const toggleDayItem = async (dayIndex, itemId) => {
-    if (!user) return;
-    
-    const dayData = userData[dayIndex] || {};
-    const isCompleted = dayData[itemId];
-    
-    // Optimistic UI update
-    setUserData(prev => ({
-      ...prev,
-      [dayIndex]: {
-        ...prev[dayIndex],
-        [itemId]: !isCompleted
-      }
-    }));
-
+    if (!user) return { success: false };
+    const key = `${user.id}:${dayIndex}:${itemId}`;
+    if (progressWrites.current.has(key)) return { success: false };
+    progressWrites.current.add(key);
+    const isCompleted = Boolean(userData[dayIndex]?.[itemId]);
+    setSaveError(null);
     try {
-      if (isCompleted) {
-        // Delete record
-        await supabase
-          .from('user_progress')
-          .delete()
-          .match({ user_id: user.id, day_number: dayIndex, rule_id: itemId });
-      } else {
-        // Insert record
-        await supabase
-          .from('user_progress')
-          .insert({ user_id: user.id, day_number: dayIndex, rule_id: itemId });
-      }
-    } catch (error) {
-      console.error('Error toggling progress:', error);
-      // Revert on failure
+      const record = { user_id: user.id, day_number: dayIndex, rule_id: itemId };
+      const result = isCompleted
+        ? await supabase.from('user_progress').delete().match(record).select('id')
+        : await supabase.from('user_progress').insert(record).select('id');
+      if (result.error) throw result.error;
+      if (result.data?.length !== 1) throw new Error('Progress write was not confirmed');
+      if (currentUserId.current !== user.id) return { success: false };
       setUserData(prev => ({
         ...prev,
-        [dayIndex]: {
-          ...prev[dayIndex],
-          [itemId]: isCompleted
-        }
+        [dayIndex]: { ...prev[dayIndex], [itemId]: !isCompleted }
       }));
+      return { success: true };
+    } catch {
+      if (currentUserId.current === user.id) setSaveError('Your check-in could not be saved. Please try again.');
+      return { success: false };
+    } finally {
+      progressWrites.current.delete(key);
     }
   };
-  
+
+  // Containment until an atomic season-archive migration has been verified.
   const resetProgress = async () => {
-    if (!user) return;
-    if (window.confirm("Are you sure you want to fail and start over? This will permanently delete all your progress. Your rules will be kept.")) {
-      try {
-        await supabase.from('user_progress').delete().eq('user_id', user.id);
-        await supabase.from('daily_reflections').delete().eq('user_id', user.id);
-        await supabase.from('user_profiles').delete().eq('user_id', user.id);
-        setUserData({});
-        setDailyReflections({});
-        setUserProfile(null);
-      } catch (error) {
-        console.error('Error resetting progress:', error);
-      }
-    }
+    setSaveError('Starting a new season is being improved. Your current history is safe.');
+    return { success: false };
   };
 
   const startChallenge = async (mode) => {
@@ -288,24 +362,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const saveReflection = async (dayNumber, content) => {
-    if (!user) return;
-    
-    // Optimistic
+  const saveReflection = (dayNumber, content) => {
+    if (!user || !journalQueue.current) return;
+    const editKey = `${user.id}:${dayNumber}`;
+    journalDirty.current[editKey] = true;
+    journalEdits.current[editKey] = (journalEdits.current[editKey] || 0) + 1;
     setDailyReflections(prev => ({ ...prev, [dayNumber]: content }));
-    
-    try {
-      const { error } = await supabase
-        .from('daily_reflections')
-        .upsert(
-          { user_id: user.id, day_number: dayNumber, content: content },
-          { onConflict: 'user_id, day_number' }
-        );
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving reflection:', error);
-    }
+    try { localStorage.setItem(draftKey(user.id, dayNumber), content); }
+    catch { setSaveError('This device cannot keep an offline journal draft. Keep this page open until your entry is saved.'); }
+    journalQueue.current.enqueue(String(dayNumber), content);
+  };
+
+  const retryReflection = (dayNumber) => {
+    saveReflection(dayNumber, dailyReflections[dayNumber] || '');
+    void journalQueue.current?.flush(String(dayNumber));
   };
 
   // Auth Functions
@@ -334,8 +404,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
+    const owner = user?.id;
+    let hasDraft = Object.values(journalStatus).some(state => state !== 'saved');
+    if (owner) for (let day = 1; day <= 60; day++) {
+      try { hasDraft ||= localStorage.getItem(draftKey(owner, day)) !== null; } catch { /* Use in-memory status. */ }
+    }
+    if (hasDraft && !window.confirm('Some journal text has not been saved online. Signing out removes this device’s drafts. Stay signed in to retry, or sign out and discard those drafts?')) return;
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    journalQueue.current?.close();
+    if (owner) for (let day = 1; day <= 60; day++) {
+      try { localStorage.removeItem(draftKey(owner, day)); } catch { /* Storage unavailable. */ }
+    }
   };
 
   const resetPassword = async (email) => {
@@ -389,11 +469,14 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    saveError,
     loading,
     customRules,
     userData,
     userProfile,
     dailyReflections,
+    journalStatus,
+    retryReflection,
     teamMember,
     updateRules,
     toggleDayItem,

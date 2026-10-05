@@ -5,7 +5,7 @@ import {dailyRules} from '../data/rules';
 import './Landing.css';
 // Bundled with the app (not streamed) so it plays the moment someone arrives.
 const welcomeSong={title:'Do It Scared',src:'/featured/do-it-scared.mp3'};
-const price=()=>Capacitor.isNativePlatform()?'Monthly subscription required. Your store price is shown before you buy.':'A$4.99/month. Renews monthly until cancelled.';
+const price=()=>Capacitor.isNativePlatform()?'Membership is a monthly subscription. You will see the price before you choose.':'A$4.99/month. Renews monthly until cancelled.';
 export default function Landing(){return <main className="landing-container">
  <header className="landing-hero"><div className="landing-hero-content">
   <img src="/momentum60-logo.webp" fetchPriority="high" decoding="async" alt="" className="landing-logo" width="320" height="320"/>

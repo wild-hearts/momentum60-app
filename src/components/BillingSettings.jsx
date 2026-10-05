@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {Capacitor} from '@capacitor/core';
 import {supabase} from '../supabaseClient';
 import {useAuth} from '../context/AuthContext';
-import {billingRequest} from '../lib/billingClient';
+import {billingRequest,manageNativeSubscription} from '../lib/billingClient';
 
 export default function BillingSettings() {
  const {user}=useAuth();
@@ -14,7 +14,10 @@ export default function BillingSettings() {
   });return()=>{active=false};
  },[user.id,attempt]);
  async function portal(){setBusy(true);try{const {url}=await billingRequest('billing-portal');window.location.assign(url)}catch(e){setError(e.message);setBusy(false)}}
- return <section><h2>Subscription</h2><p>Cancelling renewal does not erase your saved history. Programme pause does not pause billing.</p>
+ const native=Capacitor.isNativePlatform();
+ async function manage(){setBusy(true);setError('');try{await manageNativeSubscription()}catch{setError('Your subscription settings could not be opened. You can also manage it in your device settings.')}finally{setBusy(false)}}
+ return <section><h2>Membership</h2><p>You can cancel any time. You keep full access until the end of the month you've paid for, and your saved history stays yours.</p>
+ {native&&<button type="button" className="cta-button" disabled={busy} onClick={manage}>Manage or cancel membership</button>}
  {billing?.native_billing_stores?.includes('app_store')&&<p><a href="https://apps.apple.com/account/subscriptions">Manage your Apple subscription</a></p>}
  {billing?.native_billing_stores?.includes('play_store')&&<p><a href="https://play.google.com/store/account/subscriptions">Manage your Google Play subscription</a></p>}
  {billing?.stripe_customer&&(Capacitor.isNativePlatform()?<p>You subscribed on the Momentum60 website. To manage that subscription, sign in to the website in your browser and open Settings and billing. It will not appear in your Apple or Google subscriptions.</p>:<button type="button" disabled={busy} onClick={portal}>Manage your website subscription</button>)}

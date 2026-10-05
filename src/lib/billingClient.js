@@ -9,7 +9,7 @@ export async function billingRequest(path,body={}){
  try {
   const response=await fetch(`${base || ''}/api/${path}`,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json',Authorization:`Bearer ${data.session?.access_token || ''}`},body:JSON.stringify(body)});
   const value=await response.json();if(!response.ok)throw Error(value.error || 'Billing unavailable');return value;
- } catch(error) {if(error.name==='AbortError')throw Error('The connection took too long. Please retry.',{cause:error});throw error;} finally {clearTimeout(timer);}
+ } catch(error) {if(error.name==='AbortError')throw Error('The connection took too long. Please retry.',{cause:error});if(error instanceof TypeError)throw Error('We could not reach Momentum 60 just now. Please check your connection and try again.',{cause:error});throw error;} finally {clearTimeout(timer);}
 }
 // The same product identifier is used in App Store Connect and Google Play.
 const productId=import.meta.env.VITE_NATIVE_PRODUCT_ID,androidPlan=import.meta.env.VITE_ANDROID_BASE_PLAN_ID;
@@ -45,10 +45,14 @@ export async function purchaseNative(userId){
  await nativeOffering();
  // The account identifier travels with the purchase so the server can refuse it for any other account.
  const transaction=await NativePurchases.purchaseProduct({productIdentifier:productId,planIdentifier:android()?androidPlan:undefined,productType:PURCHASE_TYPE.SUBS,quantity:1,appAccountToken:userId});
- const proof=purchaseProof(transaction);
- if(!await syncNative(proof?[proof]:[]))throw Error('Your purchase is still being confirmed by the store. Use “Check access again” in a moment.');
+ const proof=purchaseProof(transaction);let active;
+ // The store has already taken the purchase by this point, so a failure here must never read as "try buying again".
+ try{active=await syncNative(proof?[proof]:[])}catch(error){throw Error('Your purchase went through, but we could not unlock the app just yet. Nothing is lost and you will not be charged twice: tap “Restore purchases” in a moment.',{cause:error})}
+ if(!active)throw Error('Your purchase is still being confirmed by the store. Tap “Check access again” in a moment.');
 }
 export async function restoreNative(){
  requireStore();await NativePurchases.restorePurchases();
  if(!await syncNative())throw Error('No active subscription was found for this store account.');
 }
+// Opens the store's own subscription screen, where a renewal can be changed or cancelled.
+export const manageNativeSubscription=()=>NativePurchases.manageSubscriptions();

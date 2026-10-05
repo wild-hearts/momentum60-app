@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { staySignedIn, setStaySignedIn } from '../supabaseClient';
 
 function Auth() {
   const [mode, setMode] = useState('login'); // 'login', 'signup', 'forgot'
@@ -12,6 +13,7 @@ function Auth() {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(staySignedIn);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -22,6 +24,7 @@ function Auth() {
     setLoading(true);
 
     try {
+      if (mode !== 'forgot') setStaySignedIn(keepSignedIn);
       if (mode === 'login') {
         await signIn(email, password);
         navigate('/app', {replace:true});
@@ -83,7 +86,7 @@ function Auth() {
           <div style={{ position: 'relative' }}>
             <Mail size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
             <input
-              type="email" aria-label="Email address" autoComplete="email"
+              type="email" name="email" aria-label="Email address" autoComplete={mode === 'login' ? 'username' : 'email'}
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -96,7 +99,7 @@ function Auth() {
             <div style={{ position: 'relative' }}>
               <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input
-                type="password" aria-label="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                type="password" name="password" aria-label="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -107,6 +110,17 @@ function Auth() {
             </div>
           )}
 
+          {mode !== 'forgot' && (
+            <label style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
+              <input
+                type="checkbox"
+                checked={keepSignedIn}
+                onChange={(e) => setKeepSignedIn(e.target.checked)}
+                style={{ accentColor: '#E1A756', width: '1.15rem', height: '1.15rem', flexShrink: 0 }}
+              />
+              <span>Keep me signed in on this device</span>
+            </label>
+          )}
 
           {mode === 'signup' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>

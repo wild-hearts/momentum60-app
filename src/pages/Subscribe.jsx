@@ -33,10 +33,12 @@ export default function Subscribe(){
   return()=>{active=false};
  },[native,user.id,attempt]);
  async function begin(restore=false){setBusy(true);setError('');try{if(native){await (restore?restoreNative():purchaseNative(user.id));window.location.reload()}else{const requestId=sessionStorage.getItem('m60-checkout') || crypto.randomUUID();sessionStorage.setItem('m60-checkout',requestId);const {url}=await billingRequest('checkout',{requestId});window.location.assign(url)}}catch(e){setError(e.message);setBusy(false)}}
- return <main className="app-container"><h1>Make space for your next small action.</h1>{price&&<h2>{price}</h2>}{loadingPrice&&<p role="status">Loading your store price…</p>}
- <p>Your monthly subscription includes the 60-day programme, album, journal and repeat seasons. New music or a personal song is not included.</p><p>Renews monthly until cancelled. A 60-day programme can cross more than two billing dates. Cancel future renewal in billing settings; access continues through the paid period.</p>
- <button className="cta-button" disabled={busy||!ready} onClick={()=>begin()}>{busy?'Please wait…':'Subscribe monthly'}</button>
- {native&&<button disabled={busy} onClick={()=>begin(true)}>Restore purchases</button>}
- {native&&!ready&&!loadingPrice&&<button onClick={()=>{setLoadingPrice(true);setError('');setAttempt(n=>n+1)}}>Retry store connection</button>}
- <button type="button" onClick={()=>window.location.reload()}>Check access again</button><p role="alert">{error}</p><p><Link to="/summary">Read your saved history</Link> · <Link to="/settings">Settings and billing</Link></p><p><Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link></p></main>
+ return <main className="app-container"><h1>You're in the right place.</h1>{loadingPrice&&<p role="status">Loading your store price…</p>}
+ <p>Your membership opens the whole of Momentum 60: the 60-day programme, all 60 songs, your private journal, and every season you choose to repeat.</p>
+ {price&&<h2>{price}</h2>}
+ <p>Your membership renews each month until you cancel. Cancelling is easy: one button inside the app, any time, and you keep full access until the end of the month you've already paid for.</p>
+ <button className="cta-button primary" style={{width:'100%'}} disabled={busy||!ready} onClick={()=>begin()}>{busy?'Please wait…':'Start my membership'}</button>
+ {native&&<button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} disabled={busy} onClick={()=>begin(true)}>Restore purchases</button>}
+ {native&&!ready&&!loadingPrice&&<button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} onClick={()=>{setLoadingPrice(true);setError('');setAttempt(n=>n+1)}}>Retry store connection</button>}
+ <button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} onClick={()=>window.location.reload()}>Check access again</button><p role="alert">{error}</p><p><Link to="/summary">Read your saved history</Link> · <Link to="/settings">Settings and billing</Link></p><p><Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link></p></main>
 }

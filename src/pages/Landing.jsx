@@ -3,7 +3,7 @@ import {Capacitor} from '@capacitor/core';
 import AudioPlayer from '../components/AudioPlayer';
 import './Landing.css';
 // Bundled with the app (not streamed) so it plays the moment someone arrives.
-const welcomeSong={title:'But I Will',src:'/featured/but-i-will.mp3'};
+const welcomeSong={title:'Do It Scared',src:'/featured/do-it-scared.mp3'};
 const steps=[
  ['Choose one practice','Something that matters to you, with a smaller version for difficult days.'],
  ['Give it a place','Choose a moment you already recognise: after coffee, before lunch, or when you arrive home.'],

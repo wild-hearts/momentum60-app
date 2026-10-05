@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { motivationalQuotes } from '../data/quotes';
 import { dailySongs, SONGS_BASE_URL } from '../data/songs';
+import AudioPlayer from '../components/AudioPlayer';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
 import AccessibleDialog from '../components/AccessibleDialog';
@@ -179,6 +180,11 @@ function Tracker() {
               I will choose a manageable action, notice what helps, and return after a missed day. My progress does not need to be perfect to matter.
             </p>
             
+            <div style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(225, 167, 86, 0.45)', background: 'rgba(225, 167, 86, 0.08)' }}>
+              <p style={{ margin: '0 0 0.75rem', color: 'var(--gold)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.8rem' }}>Your commitment song · But I Will</p>
+              <AudioPlayer src="/featured/but-i-will.mp3" title="But I Will" />
+            </div>
+
             <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Type your full name to sign digitally:</label>
               <input 

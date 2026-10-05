@@ -1,4 +1,13 @@
-import {createClient} from '@supabase/supabase-js';
-import {identity,allowClient} from './_lib/billing.js';
-import {reconcileNative} from './_lib/nativeAccess.js';
-export default async function handler(req,res){if(allowClient(req,res))return;if(req.method!=='POST')return res.status(405).end();try{const db=createClient(process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}});const user=await identity(req,db);await reconcileNative(db,user.id);return res.json({reconciled:true})}catch{return res.status(503).json({error:'Purchase verification is unavailable. Your store receipt can be restored when the connection returns.'})}}
+import {databaseService,identity,allowClient,requestBody} from './_lib/billing.js';
+import {reconcileNative,PurchaseOwnedElsewhere} from './_lib/nativeAccess.js';
+export default async function handler(req,res){
+ if(allowClient(req,res))return;if(req.method!=='POST')return res.status(405).end();
+ try{
+  const db=databaseService();const user=await identity(req,db);const proofs=requestBody(req).purchases;
+  const active=await reconcileNative(db,user.id,Array.isArray(proofs)?proofs:[]);
+  return res.json({reconciled:true,active});
+ }catch(error){
+  if(error instanceof PurchaseOwnedElsewhere)return res.status(409).json({error:'This store subscription is already linked to a different Momentum60 account. Sign in to that account to use it.'});
+  return res.status(503).json({error:'Purchase verification is unavailable. Your store purchase can be restored when the connection returns.'});
+ }
+}

@@ -38,7 +38,7 @@ test('all migrations apply to the legacy schema and keep existing accounts usabl
   const before={};for(const t of ['auth.users','user_profiles','user_progress','daily_reflections','custom_rules'])before[t]=await count(db,t);
 
   const files=readdirSync(new URL('supabase/migrations/',root)).filter(f=>f.endsWith('.sql')).sort();
-  assert.equal(files.length,12);
+  assert.equal(files.length,13);
   for(const file of files)await db.exec(read('supabase/migrations/'+file));
 
   // No legacy row is lost or rewritten beyond the additive season stamp.
@@ -65,6 +65,9 @@ test('all migrations apply to the legacy schema and keep existing accounts usabl
   await assert.rejects(db.exec(`SELECT begin_momentum_billing('${U.active}',false)`),/permission denied/);
   await assert.rejects(db.exec(`SELECT ensure_momentum_checkout('${U.active}')`),/permission denied/);
   await assert.rejects(db.exec(`UPDATE momentum_subscriptions SET legacy_access=true`),/permission denied/);
+  // Store purchase records are invisible to the app and cannot be forged from it.
+  await assert.rejects(db.exec('SELECT * FROM momentum_native_purchases'),/permission denied/);
+  await assert.rejects(db.exec(`INSERT INTO momentum_native_purchases(store,purchase_id,user_id,product,entitled) VALUES('app_store','forged','${U.active}','monthly',true)`),/permission denied/);
 
   // A member whose 60 days ended long ago can archive and begin again with nothing lost.
   await as(db,'authenticated',U.finished);
@@ -87,7 +90,7 @@ test('all migrations apply to the legacy schema and keep existing accounts usabl
 
   // Signed-out callers reach nothing new.
   await as(db,'anon');
-  for(const t of ['momentum_subscriptions','momentum_season_archives'])await assert.rejects(db.exec(`SELECT * FROM ${t}`),/permission denied/);
+  for(const t of ['momentum_subscriptions','momentum_season_archives','momentum_native_purchases'])await assert.rejects(db.exec(`SELECT * FROM ${t}`),/permission denied/);
   assert.equal(await count(db,'momentum_practices'),0);
   await assert.rejects(db.exec(`SELECT delete_momentum_account('${U.active}')`),/permission denied/);
   await assert.rejects(db.exec('SELECT get_partner_progress()'),/permission denied/);
@@ -101,5 +104,11 @@ test('all migrations apply to the legacy schema and keep existing accounts usabl
   assert.equal(await count(db,`auth.users WHERE id='${U.partnerA}'`),0);
   assert.equal(await count(db,`user_profiles WHERE user_id='${U.partnerB}' AND partner_id IS NULL`),1);
   assert.equal(await count(db,`momentum_subscriptions WHERE user_id='${U.partnerA}'`),0);
+  // One store subscription belongs to one account, and leaves with that account.
+  await db.exec(`INSERT INTO momentum_native_purchases(store,purchase_id,user_id,product,entitled) VALUES('app_store','1000001','${U.active}','monthly',true)`);
+  await assert.rejects(db.exec(`INSERT INTO momentum_native_purchases(store,purchase_id,user_id,product,entitled) VALUES('app_store','1000001','${U.finished}','monthly',true)`),/duplicate key/);
+  await assert.rejects(db.exec(`INSERT INTO momentum_native_purchases(store,purchase_id,user_id,product,entitled) VALUES('test_store','x','${U.active}','monthly',true)`),/check constraint/);
+  await db.exec(`SELECT delete_momentum_account('${U.active}')`);
+  assert.equal(await count(db,'momentum_native_purchases'),0);
  } finally {await db.close();}
 });

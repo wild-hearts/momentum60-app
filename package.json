@@ -14,12 +14,13 @@
     "native:sync": "vite build && cap sync && node scripts/remove-bundled-songs.mjs"
   },
   "dependencies": {
+    "@apple/app-store-server-library": "^3.1.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.5.0",
     "@capacitor/local-notifications": "^8.3.1",
-    "@revenuecat/purchases-capacitor": "^13.7.0",
+    "@capgo/native-purchases": "^8.8.1",
     "@supabase/gotrue-js": "^2.105.4",
     "@supabase/supabase-js": "^2.105.4",
     "canvas-confetti": "^1.9.4",

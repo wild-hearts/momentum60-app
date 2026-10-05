@@ -177,7 +177,7 @@ function Tracker() {
           <div style={{ maxWidth: '600px', textAlign: 'center', background: 'var(--card-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--card-border)' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #E1A756 0%, #A36E39 100%)', WebkitBackgroundClip: 'text', color: 'transparent' }}>The Commitment</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.6', textAlign: 'left' }}>
-              I will choose a manageable action, notice what helps, and return after a missed day. My progress does not need to be perfect to matter.
+              I agree that perfection is a trap. I agree that doing nothing is no longer acceptable. I commit to the Non-Zero Rule: I will complete at least one small task every single day for the next 60 days to keep my momentum alive.
             </p>
             
             <div style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(225, 167, 86, 0.45)', background: 'rgba(225, 167, 86, 0.08)' }}>

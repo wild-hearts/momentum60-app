@@ -35,6 +35,32 @@
 
 
 
+.landing-subtitle:has(+ .landing-song) {
+  margin-bottom: 1.75rem;
+}
+
+.landing-song {
+  max-width: 520px;
+  margin: 0 auto 2rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border: 1px solid rgba(225, 167, 86, 0.45);
+  border-radius: 20px;
+  background: rgba(225, 167, 86, 0.08);
+}
+
+.landing-song-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 0.35rem;
+}
+
+.landing-song h3 {
+  font-size: 1.6rem;
+  margin: 0 0 0.9rem;
+}
+
 .landing-hero-content {
   max-width: 900px;
 }

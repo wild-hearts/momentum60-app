@@ -6,20 +6,22 @@ import { AuthContext } from '../context/AuthContext';
 import { dailyPrompts } from '../data/rules';
 import { motivationalQuotes } from '../data/quotes';
 import { dailySongs, SONGS_BASE_URL } from '../data/songs';
+import AudioPlayer from '../components/AudioPlayer';
 import { playChime, playClick } from '../utils/audioUtils';
 import Mascot from '../components/Mascot';
+import AccessibleDialog from '../components/AccessibleDialog';
+import { progressSummary } from '../lib/progressSummary';
+import { localDate, seasonCalendar, pausedDates } from '../lib/seasonCalendar';
 import './Tracker.css';
 
 function Tracker() {
   const navigate = useNavigate();
-  const { user, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
+  const { user, saveError, journalStatus, retryReflection, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
   const [rewardModal, setRewardModal] = useState(false);
   const [songType, setSongType] = useState('');
   const [songTopic, setSongTopic] = useState('');
-  const [hasFailed, setHasFailed] = useState(false);
-  const [failedDay, setFailedDay] = useState(null);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [contractName, setContractName] = useState('');
   const [contractAgreed, setContractAgreed] = useState(false);
@@ -33,79 +35,19 @@ function Tracker() {
     return customRules.some(rule => dayData[rule.id] === true || dayData[rule.id] === 'true'); // Handle supabase booleans/strings
   };
 
-  const isDayPerfect = (dayNum) => {
-    const dayData = userData[dayNum];
-    if (!dayData) return false;
-    // Perfect day means all 5 rules are checked
-    return customRules.every(rule => dayData[rule.id] === true || dayData[rule.id] === 'true');
-  };
+  const zone = userProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const calendar = userProfile?.start_date ? seasonCalendar({
+    startDate: localDate(new Date(userProfile.start_date), zone), today: localDate(new Date(), zone), pausedDates: pausedDates(userProfile, localDate(new Date(), zone))
+  }) : { day: 1, ended: false };
+  const activeCalendarDay = Math.max(1, calendar.day);
 
-  const getActiveDay = () => {
-    if (!userProfile?.start_date) return 1;
-    const start = new Date(userProfile.start_date);
-    start.setHours(0,0,0,0);
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    const diffTime = Math.abs(now - start);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return Math.min(diffDays + 1, 60);
-  };
-
-  const activeCalendarDay = getActiveDay();
-  
   // Calculate Mascot state based on active calendar day
   const currentDayData = userData[activeCalendarDay] || {};
   const isFed = customRules.some(rule => currentDayData[rule.id]);
 
-  let completedCount = 0;
-  let currentPerfectStreak = 0;
-  let longestPerfectStreak = 0;
-  let passesAvailable = 0;
-  const passUsedDays = {};
-  let hasFailedCalc = false;
-  let failedDayCalc = null;
+  const { actionDays: completedCount, streak: currentPerfectStreak, best: longestPerfectStreak,
+    earnedPasses: passesAvailable, legacyRewardDays, returning } = progressSummary(userData, customRules, activeCalendarDay);
 
-  for (let i = 1; i <= Math.min(activeCalendarDay, 60); i++) {
-    const perfect = isDayPerfect(i);
-    const completed = isDayCompleted(i);
-
-    if (perfect) {
-      completedCount++;
-      currentPerfectStreak++;
-      longestPerfectStreak = Math.max(longestPerfectStreak, currentPerfectStreak);
-      // Earn a pass for every 10 consecutive perfect days
-      if (currentPerfectStreak > 0 && currentPerfectStreak % 10 === 0) {
-        passesAvailable++;
-      }
-    } else if (completed) {
-      completedCount++;
-      currentPerfectStreak = 0;
-    } else {
-      // ZERO DAY logic
-      currentPerfectStreak = 0;
-      if (i < activeCalendarDay) {
-        // Past day!
-        if (passesAvailable > 0) {
-          passesAvailable--;
-          passUsedDays[i] = true;
-          completedCount++; // Counts as survived!
-        } else {
-          hasFailedCalc = true;
-          failedDayCalc = i;
-          break; // Chain broken
-        }
-      }
-    }
-  }
-
-  React.useEffect(() => {
-    if (!userProfile) return;
-    if (hasFailedCalc && !hasFailed) {
-      setHasFailed(true);
-      setFailedDay(failedDayCalc);
-    }
-  }, [userProfile, hasFailedCalc, failedDayCalc, hasFailed]);
-  
   const progressPercentage = (completedCount / 60) * 100;
 
   const handleRewardSubmit = (e) => {
@@ -117,10 +59,9 @@ function Tracker() {
   };
 
   const handleStartOver = async () => {
-    await resetProgress();
+    const result = await resetProgress();
+    if (!result?.success) return;
     setSelectedDay(null);
-    setHasFailed(false);
-    setFailedDay(null);
     setOnboardingStep(1);
     setContractName('');
     setContractAgreed(false);
@@ -133,7 +74,7 @@ function Tracker() {
   };
 
   const toggleRule = async (ruleId) => {
-    if (selectedDay !== activeCalendarDay) return; // Cannot edit past days
+    if (calendar.ended || calendar.suspended || selectedDay !== activeCalendarDay) return; // Cannot edit past days
     
     playClick();
     
@@ -142,7 +83,8 @@ function Tracker() {
     const wasAnyDone = customRules.some(r => dayData[r.id]);
     
     // Call Supabase update function
-    await toggleDayItem(selectedDay, ruleId);
+    const result = await toggleDayItem(selectedDay, ruleId);
+    if (!result?.success) return;
     
     // Determine new visual state for confetti
     const isNowDone = !dayData[ruleId];
@@ -176,12 +118,12 @@ function Tracker() {
         var duration = 3000;
         var end = Date.now() + duration;
         (function frame() {
-          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
-          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+          confetti({ disableForReducedMotion: true, particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+          confetti({ disableForReducedMotion: true, particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
           if (Date.now() < end) requestAnimationFrame(frame);
         }());
       } else {
-         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
+         confetti({ disableForReducedMotion: true, particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#E1A756', '#A36E39', '#ffffff'] });
       }
       
       // Delay the quote modal slightly so confetti has time to pop
@@ -238,6 +180,11 @@ function Tracker() {
               I agree that perfection is a trap. I agree that doing nothing is no longer acceptable. I commit to the Non-Zero Rule: I will complete at least one small task every single day for the next 60 days to keep my momentum alive.
             </p>
             
+            <div style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(225, 167, 86, 0.45)', background: 'rgba(225, 167, 86, 0.08)' }}>
+              <p style={{ margin: '0 0 0.75rem', color: 'var(--gold)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.8rem' }}>Your commitment song · But I Will</p>
+              <AudioPlayer src="/featured/but-i-will.mp3" title="But I Will" />
+            </div>
+
             <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Type your full name to sign digitally:</label>
               <input 
@@ -287,14 +234,14 @@ function Tracker() {
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               <h3 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '0.5rem' }}>🛡️ The Honor System</h3>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>No extra steps. Just check the boxes every day. You're only cheating yourself if you lie.</p>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Record the actions you take. No extra writing is needed.</p>
             </button>
             <button 
               onClick={() => startChallenge('journal')}
               style={{ background: 'rgba(225,167,86,0.1)', border: '1px solid #E1A756', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               <h3 style={{ color: '#E1A756', fontSize: '1.25rem', marginBottom: '0.5rem' }}>📖 Journal Mode (Recommended)</h3>
-              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>A daily text reflection is required. At the end of the 60 days, you get a chronological document of your entire mental journey.</p>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Add reflections when they help. Writing is optional, and your entries remain available to review.</p>
             </button>
           </div>
         </div>
@@ -304,6 +251,7 @@ function Tracker() {
 
   return (
     <div className="app-container">
+      <p role="status" aria-live="polite">{saveError}</p>
       {/* Shown only when the last load came from the cached copy, so a tunnel
           or a dead wifi reads as "offline" rather than "your streak is gone". */}
       {usingCachedData && (
@@ -327,27 +275,27 @@ function Tracker() {
       )}
       <header className="header">
         <h1 style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>Momentum 60</h1>
-        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>The Non-Zero Challenge. Do not break the chain.</p>
+        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>One small action. A place to return.</p>
         <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <button className="cta-button" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--accent-color)', color: 'var(--text-primary)' }} onClick={() => navigate('/')}>Back to Home</button>
-          <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: '#ef4444' }} onClick={handleStartOver}>Fail / Start Over</button>
+          <button className="cta-button primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: '#ef4444' }} onClick={handleStartOver}>Start a new season</button>
         </div>
       </header>
 
       <Mascot unlockedDays={activeCalendarDay} isTodayCompleted={isFed} />
 
       <section className="tracker-instructions" style={{ maxWidth: '1000px', margin: '0 auto 3rem', padding: '2rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', textAlign: 'left' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#E1A756', fontWeight: '700' }}>Your Daily Non-Negotiables</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#E1A756', fontWeight: '700' }}>Your daily actions</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1.1rem', lineHeight: '1.6' }}>
-          <strong>The Clock is Ticking:</strong> This challenge operates on a strict 24-hour calendar. You cannot skip ahead, and you cannot edit yesterday's progress. Click on today's tile below to access your daily tasks.
+          <strong>Begin with today:</strong> Open today’s tile and choose one action you can manage. Past entries remain available to review.
           <br /><br />
-          <strong>The Non-Zero Rule:</strong> Even some progress is better than none. To keep the chain alive, you must complete <strong>at least ONE</strong> of these tasks every day. If you have a true "zero day", the system will detect it and force you to start over.
+          <strong>A missed day does not erase your work.</strong> Return when you can. There is no catch-up requirement and no forced restart.
         </p>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(225, 167, 86, 0.1)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #E1A756' }}>
           <div>
             <h3 style={{ fontSize: '1.1rem', color: '#E1A756', marginBottom: '0.25rem' }}>Make this challenge yours.</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>You can customize these 5 non-negotiable rules at any time to fit your goals.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>Choose actions that fit your goals. One action is enough to record today.</p>
           </div>
           <button 
             onClick={() => navigate('/rules')} 
@@ -365,18 +313,27 @@ function Tracker() {
         </div>
       </section>
 
+      {returning && !calendar.ended && (
+        <section aria-labelledby="return-title" style={{ padding: '1.5rem', border: '1px solid #E1A756', borderRadius: '12px', marginBottom: '1rem' }}>
+          <h2 id="return-title">You can return today.</h2>
+          <p>Your previous progress is still here. Choose one small action you can manage today. You do not need to make up the missed days.</p>
+          <button type="button" className="cta-button primary" onClick={() => setSelectedDay(activeCalendarDay)}>Choose today’s action</button>
+        </section>
+      )}
+
+      {calendar.ended && <section aria-labelledby="complete-title"><h2 id="complete-title">This season is complete.</h2><p>You recorded {completedCount} action days. Keep the practice that helped, or begin again with a different focus. Your previous season will be saved.</p><button type="button" className="cta-button" onClick={handleStartOver}>Keep my practices in a new season</button><button type="button" className="cta-button" onClick={() => navigate('/summary')}>Review my journey</button></section>}
       <section className="progress-section" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <div className="progress-bar-container">
             <div className="progress-bar-fill" style={{ width: `${progressPercentage}%`, background: 'linear-gradient(90deg, #E1A756, #A36E39)' }}></div>
           </div>
           <div className="progress-text" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-            <span>{completedCount} of 60 Days Completed</span>
+            <span>{completedCount} action days recorded</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <span style={{ color: '#E1A756', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 🔥 Perfect Streak: {currentPerfectStreak} (Best: {longestPerfectStreak})
                 <span style={{ margin: '0 0.5rem', color: 'rgba(255,255,255,0.3)' }}>|</span>
-                🎟️ Free Passes: {passesAvailable}
+                🎟️ Legacy passes earned: {passesAvailable}
               </span>
               <button 
                 onClick={handleShare}
@@ -393,13 +350,13 @@ function Tracker() {
           <h3 style={{ fontSize: '1.25rem', color: '#E1A756', marginBottom: '1rem' }}>Your Journey Milestones</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <li style={{ opacity: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>🎟️</span> <strong>10-Day Perfect Streak:</strong> Earns 1 Free Pass (consumed automatically on Zero Days).
+              <span>🎟️</span> <strong>10-Day Perfect Streak:</strong> Legacy passes are shown as achievements. Missed days no longer require a pass.
             </li>
             <li style={{ opacity: completedCount >= 15 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>{completedCount >= 15 ? '✅' : '🔒'}</span> <strong>15 Days of Momentum:</strong> Unlocks the Sprout Mascot.
+              <span>{completedCount >= 15 ? '✅' : '🔒'}</span> <strong>15 Days of Momentum:</strong> Fifteen days with a recorded action.
             </li>
             <li style={{ opacity: completedCount >= 30 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>{completedCount >= 30 ? '✅' : '🔒'}</span> <strong>30 Days of Momentum:</strong> Unlocks the Sapling Mascot.
+              <span>{completedCount >= 30 ? '✅' : '🔒'}</span> <strong>30 Days of Momentum:</strong> Thirty days with a recorded action.
             </li>
             <li style={{ opacity: longestPerfectStreak >= 40 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem', color: longestPerfectStreak >= 40 ? '#10b981' : 'inherit' }}>
               <span>{longestPerfectStreak >= 40 ? '🔥' : '🔒'}</span> <strong>40-Day Perfect Streak:</strong> 5/5 tasks daily unlocks a personal song by The Winks!
@@ -421,7 +378,7 @@ function Tracker() {
           </div>
         )}
 
-        {(longestPerfectStreak >= 40 || completedCount >= 60) && (
+        {(longestPerfectStreak >= 40 || legacyRewardDays >= 60) && (
           <div style={{ background: 'linear-gradient(135deg, rgba(225, 167, 86, 0.2) 0%, rgba(163, 110, 57, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E1A756', textAlign: 'center', animation: 'pulse 2s infinite' }}>
             <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(225,167,86,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You earned a personal song written by The Winks.</p>
@@ -449,13 +406,18 @@ function Tracker() {
       <main className="days-grid">
         {daysArray.map((dayNum, index) => {
           const isCompleted = isDayCompleted(dayNum);
-          const isPassUsed = passUsedDays[dayNum];
+          const isPassUsed = false; // Legacy passes do not represent completed actions.
           const isLocked = dayNum > activeCalendarDay;
           const isPast = dayNum < activeCalendarDay;
           
           return (
             <div 
-              key={dayNum} 
+              key={dayNum}
+              role="button"
+              tabIndex={isLocked ? -1 : 0}
+              aria-disabled={isLocked}
+              aria-label={`Day ${dayNum}: ${isLocked ? 'locked' : isCompleted ? 'completed' : isPast ? 'missed' : 'today'}`}
+              onKeyDown={event => { if (!isLocked && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); handleDayClick(dayNum); } }}
               className={`day-card ${isCompleted || isPassUsed ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${dayNum === activeCalendarDay ? 'active' : ''}`}
               onClick={() => handleDayClick(dayNum)}
               style={{ 
@@ -499,7 +461,7 @@ function Tracker() {
 
       {selectedDay && (
         <div className="modal-overlay" onClick={() => setSelectedDay(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Daily actions" onClose={() => setSelectedDay(null)} className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => { playClick(); setSelectedDay(null); }}>
               &times;
             </button>
@@ -537,7 +499,12 @@ function Tracker() {
                 const isRuleDone = userData[selectedDay] && userData[selectedDay][rule.id];
                 return (
                   <div 
-                    key={rule.id} 
+                    key={rule.id}
+                    role="checkbox"
+                    aria-checked={Boolean(isRuleDone)}
+                    aria-disabled={calendar.ended || selectedDay !== activeCalendarDay}
+                    tabIndex={!calendar.ended && selectedDay === activeCalendarDay ? 0 : -1}
+                    onKeyDown={event => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); toggleRule(rule.id); } }}
                     className={`rule-check-item ${isRuleDone ? 'done' : ''}`}
                     onClick={() => toggleRule(rule.id)}
                     style={{ 
@@ -588,6 +555,9 @@ function Tracker() {
                   rows="5"
                   style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem', resize: 'vertical' }}
                 />
+                <p role="status" aria-live="polite">{{pending:'Waiting to save…',saving:'Saving…',saved:'Saved.',failed:'Not saved online. Keep this page open and retry.',restored:'Recovered draft. Review and save.'}[journalStatus[selectedDay]] || ''}</p>
+                {['failed','restored'].includes(journalStatus[selectedDay]) && <button type="button" onClick={() => retryReflection(selectedDay)}>Save journal entry</button>}
+
               </div>
             )}
 
@@ -598,32 +568,14 @@ function Tracker() {
             >
               {isDayCompleted(selectedDay) ? 'All Done! Close Modal' : 'Close'}
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Fail Modal */}
-      {hasFailed && (
-        <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.95)' }}>
-          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'center', background: '#081C1F', border: '2px solid #ef4444', boxShadow: '0 0 50px rgba(239, 68, 68, 0.3)' }}>
-            <h2 style={{ fontSize: '3rem', color: '#ef4444', marginBottom: '1rem', fontWeight: '900', textTransform: 'uppercase' }}>Chain Broken</h2>
-            <p style={{ fontSize: '1.2rem', color: 'white', marginBottom: '2rem', lineHeight: '1.6' }}>
-              You had a zero-day on <strong>Day {failedDay}</strong>, and you had <strong>0 Free Passes</strong> left to save you. The universe doesn't pause, and neither does the calendar.
-            </p>
-            <button 
-              onClick={handleStartOver}
-              style={{ background: '#ef4444', color: 'white', padding: '1rem 2rem', fontSize: '1.2rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', width: '100%' }}
-            >
-              Accept Failure & Start Over
-            </button>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 
       {/* Quote Modal */}
       {quoteModal.show && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setQuoteModal({ show: false, quote: '' })}>
-          <div className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Action saved" onClose={() => setQuoteModal({ show: false, quote: '' })} className="modal-content" style={{ maxWidth: '500px', textAlign: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Day Completed
             </h2>
@@ -637,14 +589,14 @@ function Tracker() {
             >
               Continue building momentum
             </button>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 
       {/* Reward Claim Modal */}
       {rewardModal && (
         <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setRewardModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
+          <AccessibleDialog label="Legacy reward request" onClose={() => setRewardModal(false)} className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setRewardModal(false)}>&times;</button>
             <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
               Claim Your Personal Song
@@ -685,7 +637,7 @@ function Tracker() {
                 Send Request to The Winks
               </button>
             </form>
-          </div>
+          </AccessibleDialog>
         </div>
       )}
 

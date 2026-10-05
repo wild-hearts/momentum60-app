@@ -8,6 +8,7 @@ function initAudio() {
 
 export function playChime() {
   try {
+    if (localStorage.getItem("momentum60:sounds") !== "on") return;
     initAudio();
     if (audioCtx.state === 'suspended') {
       audioCtx.resume();
@@ -36,6 +37,7 @@ export function playChime() {
 
 export function playClick() {
   try {
+    if (localStorage.getItem("momentum60:sounds") !== "on") return;
     initAudio();
     if (audioCtx.state === 'suspended') {
       audioCtx.resume();

@@ -21,7 +21,7 @@ function UpdatePassword() {
     setLoading(true);
     try {
       await updatePassword(password);
-      navigate('/tracker');
+      navigate('/app', {replace:true});
     } catch (err) {
       setError(err.message);
     } finally {

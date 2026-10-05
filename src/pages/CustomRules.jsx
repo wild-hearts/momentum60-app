@@ -24,13 +24,7 @@ function CustomRules() {
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset to the original Momentum 5 rules?")) {
-      setEditingRules([
-        { id: 'diet', label: 'Stick to my diet', sort_order: 1 },
-        { id: 'workout', label: '45 min workout', sort_order: 2 },
-        { id: 'water', label: 'Drink 3L of water', sort_order: 3 },
-        { id: 'reading', label: 'Read 10 pages', sort_order: 4 },
-        { id: 'photo', label: 'Take progress photo', sort_order: 5 }
-      ]);
+      setEditingRules(editingRules.map((rule, index) => ({ ...rule, label: dailyRules[index]?.description || rule.label })));
     }
   };
 

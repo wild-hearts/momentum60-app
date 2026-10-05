@@ -1,0 +1,4 @@
+import AudioPlayer from '../components/AudioPlayer';
+import {Link} from 'react-router-dom';
+import {dailySongs,SONGS_BASE_URL} from '../data/songs';
+export default function Music(){return <main className="app-container" style={{padding:'7rem 1.25rem 3rem',maxWidth:760,margin:'auto'}}><Link to="/app">Back to today</Link><h1>Your 60-day album</h1><p>Listen in order, return to a favourite, or leave the music off. Your action counts either way.</p>{['Spark','Flame','Fire','Flight'].map((act,i)=>{const starts=[0,14,30,45],ends=[14,30,45,60];return <section key={act}><h2>{act}</h2>{dailySongs.slice(starts[i],ends[i]).map((song,n)=><details key={song.file}><summary>Day {starts[i]+n+1} · {song.title}</summary><AudioPlayer title={song.title} src={`${SONGS_BASE_URL}/${song.file}`}/></details>)}</section>})}</main>}

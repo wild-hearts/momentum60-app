@@ -1,21 +1,3 @@
-/**
- * Daily reminders on the device itself.
- *
- * The app has always had a reminder setting, but it only ever drove an email
- * from a Vercel cron, and that cron has been failing since it was written
- * because RESEND_API_KEY was never set on the project. So nobody has ever been
- * reminded of anything.
- *
- * A local notification needs no server, no key and no network: iOS holds the
- * schedule and fires it even with the app closed. It is also the honest
- * answer to Apple's "minimum functionality" rule, which rejects apps that are
- * a website in a wrapper. A streak app that nudges you at 6pm is doing
- * something a web page cannot.
- *
- * Everything here is a no-op on the web, so the same Settings screen works in
- * both places.
- */
-
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 /** One fixed id, so re-scheduling replaces rather than stacks up. */
@@ -52,7 +34,7 @@ export async function requestPermission() {
 export async function scheduleDailyReminder(time) {
   if (!isNative()) return false;
   const [hour, minute] = String(time || '18:00').split(':').map(Number);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) return false;
+  if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return false;
 
   try {
     await cancelDailyReminder();

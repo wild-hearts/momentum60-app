@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { staySignedIn, setStaySignedIn } from '../supabaseClient';
 
 function Auth() {
   const [mode, setMode] = useState('login'); // 'login', 'signup', 'forgot'
@@ -12,6 +13,7 @@ function Auth() {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(staySignedIn);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -20,21 +22,23 @@ function Auth() {
     setError('');
     setMessage('');
     setLoading(true);
-    
+
     try {
+      if (mode !== 'forgot') setStaySignedIn(keepSignedIn);
       if (mode === 'login') {
         await signIn(email, password);
-        navigate('/tracker');
+        navigate('/app', {replace:true});
       } else if (mode === 'signup') {
         if (!acceptedTerms) {
           setError('Please accept the Terms and Privacy Policy to create your account.');
           return;
         }
-        await signUp(email, password, { marketingOptIn });
-        setMessage('Check your email for the confirmation link to log in.');
+        const result = await signUp(email, password, { marketingOptIn });
+        if (result.session) navigate('/app', {replace:true});
+        else setMessage('Check your email to confirm your account, then return here and sign in.');
       } else if (mode === 'forgot') {
         await resetPassword(email);
-        setMessage('Check your email for the password reset link.');
+        setMessage('Check your email for the password reset link. After choosing a new password in your browser, return here and sign in.');
       }
     } catch (err) {
       setError(err.message);
@@ -45,9 +49,9 @@ function Auth() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem 2rem' }}>
-      
+
       <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-        
+
         <img
           src="/momentum60-logo.webp"
             fetchPriority="high"
@@ -65,25 +69,25 @@ function Auth() {
         </p>
 
         {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444' }}>
+          <div role="alert" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444' }}>
             <AlertCircle size={20} />
             <span style={{ fontSize: '0.9rem' }}>{error}</span>
           </div>
         )}
 
         {message && (
-          <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', color: '#10b981', fontSize: '0.9rem', textAlign: 'center' }}>
+          <div role="status" style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', color: '#10b981', fontSize: '0.9rem', textAlign: 'center' }}>
             {message}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          
+
           <div style={{ position: 'relative' }}>
             <Mail size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-            <input 
-              type="email" 
-              placeholder="Email address" 
+            <input
+              type="email" name="email" aria-label="Email address" autoComplete={mode === 'login' ? 'username' : 'email'}
+              placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -94,9 +98,9 @@ function Auth() {
           {mode !== 'forgot' && (
             <div style={{ position: 'relative' }}>
               <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input 
-                type="password" 
-                placeholder="Password" 
+              <input
+                type="password" name="password" aria-label="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -106,6 +110,17 @@ function Auth() {
             </div>
           )}
 
+          {mode !== 'forgot' && (
+            <label style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
+              <input
+                type="checkbox"
+                checked={keepSignedIn}
+                onChange={(e) => setKeepSignedIn(e.target.checked)}
+                style={{ accentColor: '#E1A756', width: '1.15rem', height: '1.15rem', flexShrink: 0 }}
+              />
+              <span>Keep me signed in on this device</span>
+            </label>
+          )}
 
           {mode === 'signup' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
@@ -119,9 +134,9 @@ function Auth() {
                 />
                 <span>
                   I agree to the{' '}
-                  <a href="https://www.themomentumrule.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#E1A756' }}>Terms</a>
+                  <Link to="/terms" style={{ color: '#E1A756' }}>Terms</Link>
                   {' '}and{' '}
-                  <a href="https://www.themomentumrule.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#E1A756' }}>Privacy Policy</a>.
+                  <Link to="/privacy" style={{ color: '#E1A756' }}>Privacy Policy</Link>.
                 </span>
               </label>
               <label style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', cursor: 'pointer' }}>
@@ -136,8 +151,8 @@ function Auth() {
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}
           >

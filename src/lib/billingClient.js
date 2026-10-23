@@ -56,3 +56,13 @@ export async function restoreNative(){
 }
 // Opens the store's own subscription screen, where a renewal can be changed or cancelled.
 export const manageNativeSubscription=()=>NativePurchases.manageSubscriptions();
+// Purchases that arrive on their own: Ask to Buy approvals, renewals while the app
+// is open, offer codes redeemed in the App Store. Each is sent for verification as
+// soon as it lands, once someone is signed in, so nobody has to find Restore.
+export function listenForStorePurchases(){
+ if(!Capacitor.isNativePlatform())return;
+ NativePurchases.addListener('transactionUpdated',async transaction=>{
+  const proof=purchaseProof(transaction);if(!proof)return;
+  const {data}=await supabase.auth.getSession();if(data.session)await syncNative([proof]).catch(()=>{});
+ }).catch(()=>{});
+}

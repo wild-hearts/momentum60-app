@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 import Capacitor
 
 @UIApplicationMain
@@ -7,7 +8,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // The day's song keeps playing when the phone is locked or she switches
+        // apps. Needs the "audio" background mode in Info.plist as well.
+        // .playback also plays with the silent switch on, as music apps do.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
         return true
     }
 

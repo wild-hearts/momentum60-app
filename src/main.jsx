@@ -6,8 +6,10 @@ import './index.css'
 import App from './App.jsx'
 import { hasServiceConfiguration } from './supabaseClient'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { listenForStorePurchases } from './lib/billingClient'
 
 if (!Capacitor.isNativePlatform()) registerSW({ immediate: true });
+if (hasServiceConfiguration) listenForStorePurchases();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

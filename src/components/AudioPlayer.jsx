@@ -1,5 +1,18 @@
 import {useId, useRef, useState} from 'react';
 
+// The song's name on the lock screen and in Control Centre, with play and pause
+// working from there, while the app is in the background.
+function showOnLockScreen(element, title) {
+  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({title: title || 'Momentum 60', artist: 'Momentum 60'});
+    navigator.mediaSession.setActionHandler('play', () => { element.play().catch(() => {}); });
+    navigator.mediaSession.setActionHandler('pause', () => { element.pause(); });
+  } catch {
+    // An engine without one of these actions: the song still plays.
+  }
+}
+
 // Browser controls preserve platform keyboard and screen-reader behaviour.
 export default function AudioPlayer({src, title}) {
   const audio = useRef(null);
@@ -16,9 +29,12 @@ export default function AudioPlayer({src, title}) {
       style={{width:'100%', maxWidth:'100%'}} aria-label={title}
       aria-describedby={failed ? messageId : undefined}
       onError={() => setFailed(true)} onCanPlay={() => setFailed(false)}
-      onPlay={event => document.querySelectorAll('audio').forEach(other => {
-        if (other !== event.currentTarget) other.pause();
-      })}/>
+      onPlay={event => {
+        document.querySelectorAll('audio').forEach(other => {
+          if (other !== event.currentTarget) other.pause();
+        });
+        showOnLockScreen(event.currentTarget, title);
+      }}/>
     {failed && <div><p id={messageId} role="alert">This track could not load. Check your connection, then reload it. Your daily action still counts without music.</p><button type="button" onClick={retry}>Reload track</button></div>}
   </div>;
 }

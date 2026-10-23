@@ -14,7 +14,11 @@ function verifiers(){
 async function firstValid(method,signed){
  if(typeof signed!=='string'||signed.length>20000)throw Error('Invalid App Store data');let failure;
  for(const verifier of verifiers()){try{return await verifier[method](signed)}catch(error){failure=error}}
+ // A failed check must be visible, or a wrong APPLE_APP_ID would make every Production
+ // notice fail quietly until Apple stops retrying. Only the library's status is logged.
+ console.error(`[apple-verify:${method}] verification failed, status ${failure?.status??'unknown'}`);
  throw Error('App Store signature rejected',{cause:failure});
 }
 export const verifyAppleTransaction=jws=>firstValid('verifyAndDecodeTransaction',jws);
 export const verifyAppleNotification=payload=>firstValid('verifyAndDecodeNotification',payload);
+export const verifyAppleRenewalInfo=signed=>firstValid('verifyAndDecodeRenewalInfo',signed);

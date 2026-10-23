@@ -8,6 +8,7 @@ function UpdatePassword() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { user, loading: authLoading, updatePassword } = useAuth();
   const navigate = useNavigate();
 
@@ -57,12 +58,16 @@ function UpdatePassword() {
             )}
             <div style={{ position: 'relative' }}>
               <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input type="password" placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={inputStyle} />
+              <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={inputStyle} />
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input type="password" placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} style={inputStyle} />
+              <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} style={inputStyle} />
             </div>
+            <button type="button" onClick={() => setShowPassword(v => !v)} aria-pressed={showPassword}
+              style={{ alignSelf: 'flex-start', minHeight: '44px', background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.9rem' }}>
+              {showPassword ? 'Hide passwords' : 'Show passwords'}
+            </button>
             <button type="submit" disabled={loading}
               style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}>
               {loading ? 'Saving...' : (<>Save New Password<ArrowRight size={20} /></>)}

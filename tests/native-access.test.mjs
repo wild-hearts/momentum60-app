@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,generateKeyPairSync,createSign} from 'node:crypto';
-import {applePurchase,googlePurchase,nativeAccess,nativeBillingStores,mayClaim,savePurchase,reconcileNative,PurchaseOwnedElsewhere} from '../api/_lib/nativeAccess.js';
+import {applePurchase,googlePurchase,nativeAccess,nativeBillingStores,mayClaim,savePurchase,reconcileNative,PurchaseOwnedElsewhere,shouldApply,keptExpiry,isSandboxAllowed} from '../api/_lib/nativeAccess.js';
 import {verifyAppleTransaction,verifyAppleNotification} from '../api/_lib/appleStore.js';
 import {APPLE_ROOT_G3} from '../api/_lib/appleRoot.js';
 
@@ -91,4 +91,41 @@ test('verified purchases grant access to one account, and a refund removes it',a
  const renewed=new Date(future+2592000000).toISOString();await savePurchase(db,A,{...purchase,expires_at:renewed});assert.equal(await reconcileNative(db,A),true);assert.equal(owner().native_paid_until,renewed);
  await savePurchase(db,A,{...purchase,expires_at:renewed,entitled:false});assert.equal(await reconcileNative(db,A),false);
  assert.equal(owner().native_paid_until,null);assert.deepEqual(owner().native_billing_stores,[]);assert.equal(owner().native_reconciliation_version,3);
+});
+
+test('a stale Apple record cannot undo a refund, and a retried one is harmless',async()=>{
+ assert.equal(shouldApply(null,1),true);assert.equal(shouldApply(5,5),true);assert.equal(shouldApply(5,4),false);assert.equal(shouldApply(5,null),false);
+ const db=fakeDb(),bought={...applePurchase({...tx,signedDate:1000},['monthly']),account:null};
+ await savePurchase(db,A,bought);assert.equal(await reconcileNative(db,A),true);
+ // Apple's REFUND notice, signed later.
+ await savePurchase(db,A,applePurchase({...tx,revocationDate:past},['monthly'],{signedMs:3000}));assert.equal(await reconcileNative(db,A),false);
+ // The app replays the receipt it saved before the refund: ignored.
+ await savePurchase(db,A,bought);assert.equal(await reconcileNative(db,A),false);
+ assert.equal(db.tables.momentum_native_purchases[0].last_signed_ms,3000);
+});
+test('billing grace keeps a paying member in, including after the app sends its own record',async()=>{
+ const grace=future+6*86400000,paidEnded=Date.now()-3600000;
+ // Apple's notice: the renewal failed, the paid period has just ended, grace runs on.
+ const notice=applePurchase({...tx,expiresDate:paidEnded},['monthly'],{graceUntilMs:grace,signedMs:2000});
+ assert.equal(notice.expires_at,new Date(grace).toISOString());
+ const db=fakeDb();await savePurchase(db,A,notice);assert.equal(await reconcileNative(db,A),true);
+ // On launch the app sends a newer record that carries only the paid period.
+ await savePurchase(db,A,applePurchase({...tx,expiresDate:paidEnded,signedDate:2500},['monthly']));
+ assert.equal(await reconcileNative(db,A),true);assert.equal(db.tables.momentum_native_purchases[0].expires_at,new Date(grace).toISOString());
+ // A refund is never held open by grace.
+ assert.equal(keptExpiry({entitled:true,expires_at:new Date(grace).toISOString()},{entitled:false,expires_at:new Date(paidEnded).toISOString()}),new Date(paidEnded).toISOString());
+});
+test('test purchases count for everyone until the switch is off, then only for named testers',async()=>{
+ assert.equal(isSandboxAllowed(null,'',undefined),true);
+ assert.equal(isSandboxAllowed('Me@Example.com',' me@example.com ,x@y.z','false'),true);
+ assert.equal(isSandboxAllowed('other@example.com','me@example.com','false'),false);
+ assert.equal(isSandboxAllowed(null,'me@example.com','false'),false);
+ const rows=[{store:'app_store',entitled:true,environment:'Sandbox',expires_at:new Date(future).toISOString()}];
+ assert.ok(nativeAccess(rows,Date.now(),true));assert.equal(nativeAccess(rows,Date.now(),false),null);assert.deepEqual(nativeBillingStores(rows,false),[]);
+ const previous=process.env.ALLOW_SANDBOX_ACCESS;process.env.ALLOW_SANDBOX_ACCESS='false';
+ try{
+  const db=fakeDb();db.auth={admin:{getUserById:async()=>({data:{user:{email:'stranger@example.com'}},error:null})}};
+  await savePurchase(db,A,{...applePurchase({...tx,environment:'Sandbox'},['monthly']),account:null});
+  assert.equal(await reconcileNative(db,A),false);
+ }finally{if(previous===undefined)delete process.env.ALLOW_SANDBOX_ACCESS;else process.env.ALLOW_SANDBOX_ACCESS=previous}
 });

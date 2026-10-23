@@ -2,14 +2,17 @@
 // subscription renews, expires, is refunded or is revoked. The request is
 // authenticated by Apple's signature on the payload, not by a shared secret.
 import {databaseService,requestBody} from './_lib/billing.js';
-import {verifyAppleNotification,verifyAppleTransaction} from './_lib/appleStore.js';
+import {verifyAppleNotification,verifyAppleTransaction,verifyAppleRenewalInfo} from './_lib/appleStore.js';
 import {applePurchase,allowedProducts,savePurchase,reconcileNative,PurchaseOwnedElsewhere} from './_lib/nativeAccess.js';
 export default async function handler(req,res){
  if(req.method!=='POST')return res.status(405).end();
  let notice;try{notice=await verifyAppleNotification(requestBody(req).signedPayload)}catch{return res.status(401).end()}
  try{
   const signed=notice.data?.signedTransactionInfo;if(!signed)return res.json({received:true});
-  const purchase=applePurchase(await verifyAppleTransaction(signed),allowedProducts());if(!purchase)return res.json({received:true});
+  // A billing grace period is only ever stated in the renewal info, and the notice's own
+  // signing time orders it against records the app sends.
+  const renewal=notice.data?.signedRenewalInfo?await verifyAppleRenewalInfo(notice.data.signedRenewalInfo).catch(()=>null):null;
+  const purchase=applePurchase(await verifyAppleTransaction(signed),allowedProducts(),{graceUntilMs:renewal?.gracePeriodExpiresDate,signedMs:notice.signedDate});if(!purchase)return res.json({received:true});
   const db=databaseService();
   const known=await db.from('momentum_native_purchases').select('user_id').eq('store','app_store').eq('purchase_id',purchase.purchase_id).maybeSingle();if(known.error)throw known.error;
   // An unknown purchase is attached only to the account it was bought for.

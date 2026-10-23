@@ -17,7 +17,8 @@ export default function BillingSettings() {
  const native=Capacitor.isNativePlatform();
  async function manage(){setBusy(true);setError('');try{await manageNativeSubscription()}catch{setError('Your subscription settings could not be opened. You can also manage it in your device settings.')}finally{setBusy(false)}}
  return <section><h2>Membership</h2><p>You can cancel any time. You keep full access until the end of the month you've paid for, and your saved history stays yours.</p>
- {native&&<button type="button" className="cta-button" disabled={busy} onClick={manage}>Manage or cancel membership</button>}
+ {native&&<><button type="button" className="cta-button" style={{minHeight:44}} disabled={busy} onClick={manage}>Cancel or change membership</button>
+ <p>This opens your {Capacitor.getPlatform()==='android'?'Google Play':'Apple'} subscription settings. Choose Momentum 60, then cancel. Cancel at least 24 hours before it renews to avoid the next charge. You keep access until the end of the period you've paid for.</p></>}
  {billing?.native_billing_stores?.includes('app_store')&&<p><a href="https://apps.apple.com/account/subscriptions">Manage your Apple subscription</a></p>}
  {billing?.native_billing_stores?.includes('play_store')&&<p><a href="https://play.google.com/store/account/subscriptions">Manage your Google Play subscription</a></p>}
  {billing?.stripe_customer&&(Capacitor.isNativePlatform()?<p>You subscribed on the Momentum60 website. To manage that subscription, sign in to the website in your browser and open Settings and billing. It will not appear in your Apple or Google subscriptions.</p>:<button type="button" disabled={busy} onClick={portal}>Manage your website subscription</button>)}

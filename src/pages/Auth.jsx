@@ -14,6 +14,7 @@ function Auth() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(staySignedIn);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -87,6 +88,7 @@ function Auth() {
             <Mail size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
             <input
               type="email" name="email" aria-label="Email address" autoComplete={mode === 'login' ? 'username' : 'email'}
+              autoCapitalize="none" autoCorrect="off" spellCheck={false}
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -96,17 +98,24 @@ function Auth() {
           </div>
 
           {mode !== 'forgot' && (
-            <div style={{ position: 'relative' }}>
-              <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input
-                type="password" name="password" aria-label="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
-              />
+            <div>
+              <div style={{ position: 'relative' }}>
+                <Lock size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <input
+                  type={showPassword ? 'text' : 'password'} name="password" aria-label="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
+                />
+              </div>
+              <button type="button" onClick={() => setShowPassword(v => !v)} aria-pressed={showPassword}
+                style={{ marginTop: '0.5rem', minHeight: '44px', background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.9rem' }}>
+                {showPassword ? 'Hide password' : 'Show password'}
+              </button>
             </div>
           )}
 

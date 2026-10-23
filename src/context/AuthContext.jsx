@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import { createSessionQueue } from '../lib/sessionQueue';
 import { clearAccountStorage } from '../lib/devicePrivacy';
 import { createJournalQueue } from '../lib/journalQueue';
+import { cleanEmail, passwordChangeMessage } from '../lib/passwordMessages';
 
 export const AuthContext = createContext();
 
@@ -427,7 +428,7 @@ export const AuthProvider = ({ children }) => {
   const signUp = (email, password, consent = {}) => sessionQueue.current.run(async () => {
     endingSession.current = false;
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail(email),
       password,
       options: {
         emailRedirectTo: 'https://challenge.themomentumrule.com/auth',
@@ -444,7 +445,7 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = (email, password) => sessionQueue.current.run(async () => {
     endingSession.current = false;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail(email), password });
     if (error) throw error;
     return data;
   });
@@ -478,7 +479,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPassword = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail(email), {
       redirectTo: 'https://challenge.themomentumrule.com/update-password',
     });
     if (error) throw error;
@@ -486,7 +487,7 @@ export const AuthProvider = ({ children }) => {
 
   const updatePassword = async (newPassword) => {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) throw error;
+    if (error) throw Error(passwordChangeMessage(error), { cause: error });
   };
 
   const linkTeamMember = async (friendCode) => {

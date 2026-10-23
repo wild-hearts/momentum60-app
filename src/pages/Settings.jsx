@@ -1,4 +1,5 @@
 import BillingSettings from '../components/BillingSettings';
+import ChangePassword from '../components/ChangePassword';
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Settings as SettingsIcon, Bell, Globe, AlertTriangle } from 'lucide-react';
@@ -97,6 +98,7 @@ function Settings() {
 
         <section><h2>Sound effects</h2><label><input type="checkbox" checked={sounds} onChange={e=>{setSounds(e.target.checked);try{localStorage.setItem('momentum60:sounds',e.target.checked?'on':'off')}catch{setMessage('Sound preference could not be saved on this device.')}}}/> Play short confirmation sounds on this device</label><p>Music is controlled separately. All action and save confirmations also appear as text.</p></section>
         <BillingSettings />
+        <ChangePassword />
         <form onSubmit={handleSave} className="rule-card" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '2rem' }}>

@@ -10,6 +10,7 @@ import {supabase} from '../supabaseClient';
 import {currentSeason,actName,dayImage} from '../lib/useSeason';
 import {dailyPrompts} from '../data/rules';
 import {dailySongs,SONGS_BASE_URL} from '../data/songs';
+import {windDownFor} from '../data/winddown';
 
 const greeting=()=>{const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';};
 const STATUS={pending:'Waiting to save…',saving:'Saving…',saved:'Saved.',failed:'Not saved online. Keep this page open and retry.',restored:'Recovered draft. Review and save.'};
@@ -87,8 +88,9 @@ export default function Today(){
     </section>
 
     <section className="gx-card">
-     <div className="gx-card-label"><span>Optional reflection</span></div>
-     <label htmlFor="today-reflection" className="gx-serif" style={{display:'block',fontSize:'1.3rem',marginTop:'.7rem'}}>What would you like to remember?</label>
+     <div className="gx-card-label"><span>Evening wind-down</span><span>Optional</span></div>
+     <label htmlFor="today-reflection" className="gx-serif" style={{display:'block',fontSize:'1.3rem',marginTop:'.7rem'}}>{windDownFor(day)}</label>
+     <p className="gx-note" style={{marginTop:'.5rem'}}>One honest sentence is enough. It is kept in your Momentum Book.</p>
      <textarea id="today-reflection" className="gx-textarea" rows={5} style={{marginTop:'.8rem'}} value={dailyReflections[day]||''} onChange={e=>saveReflection(day,e.target.value)}/>
      <p className="gx-note" role="status">{STATUS[journalStatus[day]]||''}</p>
      {['failed','restored'].includes(journalStatus[day])&&<button className="gx-btn quiet" onClick={()=>retryReflection(day)}>Save reflection</button>}

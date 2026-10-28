@@ -49,9 +49,9 @@ function Auth() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem 2rem' }}>
+    <div className="gx gx-auth">
 
-      <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+      <div className="gx-auth-card">
 
         <img
           src="/momentum60-logo.webp"
@@ -93,7 +93,7 @@ function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(4,20,26,0.7)', border: '1px solid rgba(245,241,236,0.14)', borderRadius: '999px', color: 'white', fontSize: '1rem' }}
             />
           </div>
 
@@ -109,7 +109,7 @@ function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(4,20,26,0.7)', border: '1px solid rgba(245,241,236,0.14)', borderRadius: '999px', color: 'white', fontSize: '1rem' }}
                 />
               </div>
               <button type="button" onClick={() => setShowPassword(v => !v)} aria-pressed={showPassword}
@@ -163,7 +163,7 @@ function Auth() {
           <button
             type="submit"
             disabled={loading}
-            style={{ width: '100%', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}
+            style={{ width: '100%', padding: '1rem', background: '#f8ba71', color: '#04141a', border: 'none', borderRadius: '999px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '0.5rem' }}
           >
             {loading ? 'Processing...' : (
               <>

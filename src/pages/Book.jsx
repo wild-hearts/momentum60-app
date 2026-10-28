@@ -2,6 +2,9 @@ import {Link} from 'react-router-dom';
 import PhotoHeader from '../gx/PhotoHeader';
 import {useAuth} from '../context/AuthContext';
 import {currentSeason,dayDone} from '../lib/useSeason';
+import WeeklyQuestion from '../components/WeeklyQuestion';
+import WeeklyLetter from '../components/WeeklyLetter';
+import {weekOfDay} from '../data/weeklyQuestions';
 
 function tally(userData,today){
  let actionDays=0,run=0,best=0;
@@ -13,7 +16,7 @@ function tally(userData,today){
 }
 
 export default function Book(){
- const {userProfile,userData,dailyReflections}=useAuth();
+ const {user,userProfile,userData,dailyReflections}=useAuth();
  const today=Math.max(1,currentSeason(userProfile).day);
  const {actionDays,streak,best}=tally(userData,today);
  const entries=Object.entries(dailyReflections).filter(([,text])=>text?.trim()).sort((a,b)=>Number(b[0])-Number(a[0])).slice(0,8);
@@ -32,6 +35,9 @@ export default function Book(){
     </div>
     <p className="gx-note" style={{marginTop:'1rem'}}>Gaps do not erase what you have done.</p>
    </section>
+
+   <WeeklyQuestion week={weekOfDay(today)} seasonStart={userProfile?.start_date} userId={user.id}/>
+   <WeeklyLetter today={today} userData={userData} dailyReflections={dailyReflections}/>
 
    <section className="gx-card">
     <div className="gx-card-label"><span>What you wrote</span></div>

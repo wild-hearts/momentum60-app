@@ -7,6 +7,9 @@ import Navbar from './pages/Navbar';
 import Landing from './pages/Landing';
 import Tracker from './pages/Tracker';
 import Today from './pages/Today';
+import Journey from './pages/Journey';
+import Book from './pages/Book';
+import AppShell from './gx/AppShell';
 import Calendar from './pages/Calendar';
 import Music from './pages/Music';
 import FAQ from './pages/FAQ';
@@ -54,7 +57,11 @@ function App() {
         
         {/* Protected Routes */}
         <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
-        <Route path="/app" element={<ProtectedRoute><SubscriptionGate><Today /></SubscriptionGate></ProtectedRoute>} />
+        <Route element={<ProtectedRoute><SubscriptionGate><AppShell /></SubscriptionGate></ProtectedRoute>}>
+          <Route path="/app" element={<Today />} />
+          <Route path="/journey" element={<Journey />} />
+          <Route path="/book" element={<Book />} />
+        </Route>
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/music" element={<ProtectedRoute><SubscriptionGate><Music /></SubscriptionGate></ProtectedRoute>} />
         <Route path="/tracker" element={<ProtectedRoute><LegacyRoute><SubscriptionGate><Tracker /></SubscriptionGate></LegacyRoute></ProtectedRoute>} />

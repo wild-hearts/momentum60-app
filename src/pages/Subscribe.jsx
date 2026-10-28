@@ -26,7 +26,7 @@ export function SubscriptionGate({children}) {
  return allowed?children:<Subscribe/>;
 }
 export default function Subscribe(){
- const {user}=useAuth(),native=Capacitor.isNativePlatform();
+ const {user,signOut}=useAuth(),native=Capacitor.isNativePlatform();
  const [price,setPrice]=useState(native?'':'A$4.99 / month'),[error,setError]=useState(''),[busy,setBusy]=useState(false),[ready,setReady]=useState(!native),[attempt,setAttempt]=useState(0),[loadingPrice,setLoadingPrice]=useState(native);
  useEffect(()=>{if(!native)return;let active=true;
   nativeOffering().then(product=>{if(active){setPrice(`${product.priceString} / month`);setReady(true);setError('')}}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoadingPrice(false)});
@@ -41,5 +41,5 @@ export default function Subscribe(){
  <button className="cta-button primary" style={{width:'100%'}} disabled={busy||!ready} onClick={()=>begin()}>{busy?'Please wait…':'Subscribe'}</button>
  {native&&<button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} disabled={busy} onClick={()=>begin(true)}>Restore purchases</button>}
  {native&&!ready&&!loadingPrice&&<button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} onClick={()=>{setLoadingPrice(true);setError('');setAttempt(n=>n+1)}}>Retry store connection</button>}
- <button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} onClick={()=>window.location.reload()}>Check access again</button><p role="alert">{error}</p><p><Link to="/summary">Read your saved history</Link> · <Link to="/settings">Settings and billing</Link></p><p><Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link></p></main>
+ <button type="button" style={{width:'100%',marginTop:'0.75rem',padding:'0.9rem 1rem',borderRadius:999,border:'1px solid rgba(225,167,86,0.6)',background:'transparent',color:'var(--text-primary)',fontSize:'1rem'}} onClick={()=>window.location.reload()}>Check access again</button><p role="alert">{error}</p><p><Link to="/summary">Read your saved history</Link> · <Link to="/settings">Settings and billing</Link></p><p><Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link></p><p className="gx-note">Signed in as {user.email}. <button type="button" style={{background:'none',border:0,padding:0,color:'inherit',textDecoration:'underline',font:'inherit'}} onClick={async()=>{try{if(await signOut()!==false)window.location.assign('/')}catch(e){setError(e.message||'Sign out could not be completed. Please retry.')}}}>Sign out</button></p></main>
 }

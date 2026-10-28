@@ -19,9 +19,6 @@ function Tracker() {
   const { user, saveError, journalStatus, retryReflection, customRules, userData, userProfile, dailyReflections, toggleDayItem, resetProgress, startChallenge, saveReflection, usingCachedData } = useContext(AuthContext);
   const [selectedDay, setSelectedDay] = useState(null);
   const [quoteModal, setQuoteModal] = useState({ show: false, quote: '' });
-  const [rewardModal, setRewardModal] = useState(false);
-  const [songType, setSongType] = useState('');
-  const [songTopic, setSongTopic] = useState('');
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [contractName, setContractName] = useState('');
   const [contractAgreed, setContractAgreed] = useState(false);
@@ -49,14 +46,6 @@ function Tracker() {
     earnedPasses: passesAvailable, legacyRewardDays, returning } = progressSummary(userData, customRules, activeCalendarDay);
 
   const progressPercentage = (completedCount / 60) * 100;
-
-  const handleRewardSubmit = (e) => {
-    e.preventDefault();
-    const subject = encodeURIComponent("40-Day Perfect Streak Reward: Custom Song Request");
-    const body = encodeURIComponent(`User Email: ${user?.email || 'N/A'}\n\nType of Song requested:\n${songType}\n\nWhat should it be about:\n${songTopic}`);
-    window.location.href = `mailto:info@wildheartspublishing.com.au?subject=${subject}&body=${body}`;
-    setRewardModal(false);
-  };
 
   const handleStartOver = async () => {
     const result = await resetProgress();
@@ -359,10 +348,10 @@ function Tracker() {
               <span>{completedCount >= 30 ? '✅' : '🔒'}</span> <strong>30 Days of Momentum:</strong> Thirty days with a recorded action.
             </li>
             <li style={{ opacity: longestPerfectStreak >= 40 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem', color: longestPerfectStreak >= 40 ? '#10b981' : 'inherit' }}>
-              <span>{longestPerfectStreak >= 40 ? '🔥' : '🔒'}</span> <strong>40-Day Perfect Streak:</strong> 5/5 tasks daily unlocks a personal song by The Winks!
+              <span>{longestPerfectStreak >= 40 ? '🔥' : '🔒'}</span> <strong>40-Day Perfect Streak:</strong> 5/5 tasks daily for forty days.
             </li>
             <li style={{ opacity: completedCount >= 60 ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: '0.5rem', color: completedCount >= 60 ? '#10b981' : 'inherit' }}>
-              <span>{completedCount >= 60 ? '🦅' : '🔒'}</span> <strong>60 Days of Momentum:</strong> Complete the challenge for the Phoenix Mascot AND a personal song!
+              <span>{completedCount >= 60 ? '🦅' : '🔒'}</span> <strong>60 Days of Momentum:</strong> Complete the challenge for the Phoenix Mascot!
             </li>
           </ul>
         </div>
@@ -380,16 +369,8 @@ function Tracker() {
 
         {(longestPerfectStreak >= 40 || legacyRewardDays >= 60) && (
           <div style={{ background: 'linear-gradient(135deg, rgba(225, 167, 86, 0.2) 0%, rgba(163, 110, 57, 0.2) 100%)', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E1A756', textAlign: 'center', animation: 'pulse 2s infinite' }}>
-            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(225,167,86,0.5)' }}>🎉 YOU UNLOCKED THE ULTIMATE REWARD! 🎉</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '1.1rem' }}>You earned a personal song written by The Winks.</p>
+            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(225,167,86,0.5)' }}>🎉 YOU DID IT! 🎉</h3>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => setRewardModal(true)}
-                style={{ background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', padding: '0.75rem 2rem', border: 'none', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(225,167,86,0.4)' }}
-              >
-                Claim Your Song
-              </button>
-              
               {userProfile?.accountability_mode === 'journal' && (
                 <button 
                   onClick={() => navigate('/summary')}
@@ -589,54 +570,6 @@ function Tracker() {
             >
               Continue building momentum
             </button>
-          </AccessibleDialog>
-        </div>
-      )}
-
-      {/* Reward Claim Modal */}
-      {rewardModal && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={() => setRewardModal(false)}>
-          <AccessibleDialog label="Legacy reward request" onClose={() => setRewardModal(false)} className="modal-content" style={{ maxWidth: '600px', textAlign: 'left', background: '#081C1F', border: '1px solid #E1A756', boxShadow: '0 25px 50px -12px rgba(225, 167, 86, 0.3)' }} onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setRewardModal(false)}>&times;</button>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: '800' }}>
-              Claim Your Personal Song
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-              You've conquered the challenge. As promised, The Winks are going to write a song specifically for you. Fill out the details below to send your request directly to the band!
-            </p>
-
-            <form onSubmit={handleRewardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'white', fontWeight: 'bold' }}>What type of song do you want? (Genre/Vibe)</label>
-                <input 
-                  type="text" 
-                  value={songType}
-                  onChange={(e) => setSongType(e.target.value)}
-                  placeholder="e.g. Acoustic, Rock, Upbeat Pop, Moody Indie..."
-                  required
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem' }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'white', fontWeight: 'bold' }}>What do you want the song to be about?</label>
-                <textarea 
-                  value={songTopic}
-                  onChange={(e) => setSongTopic(e.target.value)}
-                  placeholder="Tell The Winks the story or message you want captured in your song..."
-                  required
-                  rows="4"
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '1rem', resize: 'vertical' }}
-                />
-              </div>
-
-              <button 
-                type="submit"
-                style={{ width: '100%', marginTop: '1rem', padding: '1rem', background: 'linear-gradient(90deg, #E1A756, #A36E39)', color: '#081C1F', fontSize: '1.1rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-              >
-                Send Request to The Winks
-              </button>
-            </form>
           </AccessibleDialog>
         </div>
       )}

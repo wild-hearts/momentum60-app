@@ -30,7 +30,7 @@ export default function Landing(){
 
    <div className="gx-rule"/>
    <h2 className="gx-title" style={{fontSize:'1.9rem'}}>The 5 Rules of Momentum 60</h2>
-   <p className="gx-lede">The only rule is forward momentum. A smaller version still counts. Complete at least ONE task a day. If you have a zero day, you start over at Day 1.</p>
+   <p className="gx-lede">The only rule is forward momentum. A smaller version still counts. Complete at least ONE task a day, so there is always movement every day.</p>
    {dailyRules.map((rule,i)=><article className="gx-card" key={rule.id}><div className="gx-card-label"><span>Rule {i+1}</span></div><h2>{rule.title}</h2><p>{rule.description}</p></article>)}
 
    <div className="gx-rule"/>

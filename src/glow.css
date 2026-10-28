@@ -184,3 +184,11 @@
 /* Links styled as buttons keep the button's own text colour. */
 .gx a.gx-btn { color: var(--gx-gold-ink); }
 .gx a.gx-btn.quiet { color: var(--gx-ink); }
+
+/* ---- Need chips ---- */
+.gx-chip {
+  min-height: 40px; padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--gx-hair); background: transparent;
+  color: var(--gx-ink); font: 500 0.92rem 'Outfit Variable', sans-serif; cursor: pointer;
+}
+.gx-chip.on { background: var(--gx-gold); color: var(--gx-gold-ink); border-color: var(--gx-gold); }
+.gx-card p.gx-quote { color: var(--gx-ink); }

@@ -18,6 +18,7 @@ export default function AccountMenu(){
     <Link to="/summary">Journey and journal</Link>
     <Link to="/settings">Settings and billing</Link>
     {legacyAccess&&<><Link to="/tracker">Earlier tracker and rewards</Link><Link to="/rules">Earlier rules</Link></>}
+    <Link to="/steady">Steady now</Link>
     <Link to="/faq">Help</Link>
     {!Capacitor.isNativePlatform()&&<><Link to="/books">The books</Link><Link to="/tools">Tools</Link></>}
     <Link to="/privacy">Privacy</Link>

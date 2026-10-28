@@ -4,6 +4,7 @@ import {useAuth} from '../context/AuthContext';
 import {currentSeason,dayDone} from '../lib/useSeason';
 import WeeklyQuestion from '../components/WeeklyQuestion';
 import WeeklyLetter from '../components/WeeklyLetter';
+import WheelCard from '../components/WheelCard';
 import {weekOfDay} from '../data/weeklyQuestions';
 
 function tally(userData,today){
@@ -36,6 +37,7 @@ export default function Book(){
     <p className="gx-note" style={{marginTop:'1rem'}}>Gaps do not erase what you have done.</p>
    </section>
 
+   <WheelCard userId={user.id} seasonStart={userProfile?.start_date} day={Math.min(today,60)} ended={Boolean(currentSeason(userProfile).ended)}/>
    <WeeklyQuestion week={weekOfDay(today)} seasonStart={userProfile?.start_date} userId={user.id}/>
    <WeeklyLetter today={today} userData={userData} dailyReflections={dailyReflections}/>
 
@@ -49,6 +51,7 @@ export default function Book(){
     <div className="gx-card-label"><span>More</span></div>
     <Link className="gx-btn quiet" to="/music">The album</Link>
     <Link className="gx-btn quiet" to="/calendar">Season calendar</Link>
+    <Link className="gx-btn quiet" to="/steady">Steady now</Link>
     <Link className="gx-btn quiet" to="/settings">Settings and billing</Link>
    </section>
   </main>

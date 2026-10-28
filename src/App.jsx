@@ -8,6 +8,7 @@ import Landing from './pages/Landing';
 import Tracker from './pages/Tracker';
 import Today from './pages/Today';
 import Journey from './pages/Journey';
+import Steady from './pages/Steady';
 import Book from './pages/Book';
 import AppShell from './gx/AppShell';
 import Calendar from './pages/Calendar';
@@ -49,6 +50,7 @@ function App() {
         <Route path="/delete-account" element={<DeleteAccount />} />
         <Route path="/" element={<Landing />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/steady" element={<Steady />} />
         <Route path="/books" element={Capacitor.isNativePlatform()?<Navigate to="/app" replace/>:<Books />} />
         <Route path="/tools" element={Capacitor.isNativePlatform()?<Navigate to="/app" replace/>:<Tools />} />
         <Route path="/install" element={<InstallInstructions />} />

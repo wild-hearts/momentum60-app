@@ -1,6 +1,8 @@
 import {useEffect,useState} from 'react';
 import {supabase} from '../supabaseClient';
 import {WEEKLY_ANSWER_MAX,weeklyQuestionFor} from '../data/weeklyQuestions';
+import CrisisSupport from './CrisisSupport';
+import {crisisScan} from '../lib/crisis';
 
 // One bigger question a week. If the table is not available yet the card hides itself.
 export default function WeeklyQuestion({week,seasonStart,userId}){
@@ -27,5 +29,6 @@ export default function WeeklyQuestion({week,seasonStart,userId}){
   <textarea className="gx-textarea" rows={5} maxLength={WEEKLY_ANSWER_MAX} style={{marginTop:'.8rem'}} aria-label="Your answer" value={text} onChange={e=>setText(e.target.value)} disabled={state==='loading'}/>
   <button className="gx-btn" disabled={!changed||!text.trim()||state==='saving'||state==='loading'} onClick={save}>{state==='saving'?'Saving…':'Save my answer'}</button>
   <p className="gx-note" role="status">{state==='failed'?'Not saved. Please try again.':(!changed&&saved)?'Saved.':''}</p>
+ {crisisScan(text)&&<CrisisSupport lead="What you wrote sounds heavy. Before anything else, please talk to someone."/>}
  </section>;
 }

@@ -11,6 +11,10 @@ import {currentSeason,actName,dayImage} from '../lib/useSeason';
 import {dailyPrompts} from '../data/rules';
 import {dailySongs,SONGS_BASE_URL} from '../data/songs';
 import {windDownFor} from '../data/winddown';
+import ComeBack from '../components/ComeBack';
+import NeedPicker from '../components/NeedPicker';
+import CrisisSupport from '../components/CrisisSupport';
+import {crisisScan} from '../lib/crisis';
 
 const greeting=()=>{const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';};
 const STATUS={pending:'Waiting to save…',saving:'Saving…',saved:'Saved.',failed:'Not saved online. Keep this page open and retry.',restored:'Recovered draft. Review and save.'};
@@ -21,11 +25,16 @@ export default function Today(){
  useEffect(()=>{const timer=setInterval(()=>setClock(n=>n+1),60000);return()=>clearInterval(timer)},[]);
  const [editing,setEditing]=useState(false);
  const [signed,setSigned]=useState(false);
+ const [carried,setCarried]=useState(false);
  const [practice,setPractice]=useState(undefined),[ready,setReady]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  useEffect(()=>{let active=true;supabase.from('momentum_practices').select('*').eq('user_id',user.id).maybeSingle().then(({data,error})=>{if(active){if(error)setError('Your practice could not be loaded. Please retry.');else setPractice(data);setReady(true)}});return()=>{active=false}},[user.id]);
  const calendar=currentSeason(userProfile);
  const day=Math.max(1,calendar.day),done=Boolean(practice&&userData[day]?.[practice.id]),returning=day>1&&!Object.values(userData[day-1]||{}).some(Boolean)&&!done;
  const act=actName(day),song=dailySongs[day-1];
+ // The last day with any trace (an action or a few words), so a long gap gets a calm welcome back instead of a count.
+ const lastTraced=(()=>{for(let d=day-1;d>=1;d--){if(Object.values(userData[d]||{}).some(Boolean)||(dailyReflections[d]||'').trim())return d}return 0})();
+ const lastWords=(()=>{for(let d=day-1;d>=1;d--){if((dailyReflections[d]||'').trim())return d}return 0})();
+ const comeBack=!done&&!carried&&day>2&&day-1-lastTraced>=2;
  // The phone's nudges are rebooked from where she is today: none once today is logged, none after day 60.
  const remind=Boolean(userProfile?.reminder_enabled&&!calendar.suspended&&!calendar.invalid&&practice);
  useEffect(()=>{if(remind)void scheduleDailyReminder(userProfile.reminder_time,{day,doneToday:done})},[remind,userProfile?.reminder_time,day,done]);
@@ -68,7 +77,8 @@ export default function Today(){
 
    :<>
     <div className="gx-rule"/>
-    {returning&&<p className="gx-quote">You can return today. <span className="gx-note" style={{display:'block',marginTop:'.4rem'}}>No catch-up is needed. Your earlier progress is still here.</span></p>}
+    {comeBack&&<ComeBack lastDay={lastWords} lastReflection={dailyReflections[lastWords]} onCarryOn={()=>setCarried(true)}/>}
+    {returning&&!comeBack&&<p className="gx-quote">You can return today. <span className="gx-note" style={{display:'block',marginTop:'.4rem'}}>No catch-up is needed. Your earlier progress is still here.</span></p>}
     {!returning&&<p className="gx-quote">{dailyPrompts[day-1]}</p>}
 
     {song&&<section className="gx-card" aria-label="Today's song">
@@ -87,6 +97,8 @@ export default function Today(){
      {!Object.values(userData).some(d=>Object.values(d).some(Boolean))&&<button className="gx-link" onClick={()=>setEditing(true)}>Change this season's practice</button>}
     </section>
 
+    <NeedPicker day={day}/>
+
     <section className="gx-card">
      <div className="gx-card-label"><span>Evening wind-down</span><span>Optional</span></div>
      <label htmlFor="today-reflection" className="gx-serif" style={{display:'block',fontSize:'1.3rem',marginTop:'.7rem'}}>{windDownFor(day)}</label>
@@ -95,11 +107,13 @@ export default function Today(){
      <p className="gx-note" role="status">{STATUS[journalStatus[day]]||''}</p>
      {['failed','restored'].includes(journalStatus[day])&&<button className="gx-btn quiet" onClick={()=>retryReflection(day)}>Save reflection</button>}
     </section>
+    {crisisScan(dailyReflections[day])&&<CrisisSupport lead="What you wrote tonight sounds heavy. Before anything else, please talk to someone."/>}
    </>}
 
    {userProfile&&!choosing&&<section className="gx-card">
     <p className="gx-note">{calendar.suspended?'Your programme is paused.':'You can pause your programme when you need to.'} Pausing does not pause subscription billing.</p>
     <button className="gx-btn quiet" disabled={busy} onClick={togglePause}>{calendar.suspended?'Resume programme':'Pause programme'}</button>
+    <Link className="gx-btn quiet" to="/steady">Need steadying? Steady now</Link>
    </section>}
   </main>
  </>;

@@ -38,7 +38,7 @@ test('all migrations apply to the legacy schema and keep existing accounts usabl
   const before={};for(const t of ['auth.users','user_profiles','user_progress','daily_reflections','custom_rules'])before[t]=await count(db,t);
 
   const files=readdirSync(new URL('supabase/migrations/',root)).filter(f=>f.endsWith('.sql')).sort();
-  assert.equal(files.length,14);
+  assert.equal(files.length,16);
   for(const file of files)await db.exec(read('supabase/migrations/'+file));
 
   // No legacy row is lost or rewritten beyond the additive season stamp.

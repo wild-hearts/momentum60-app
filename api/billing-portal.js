@@ -1,0 +1,3 @@
+import {allowClient} from './_lib/billing.js';
+import {services,identity,siteOrigin} from './_lib/billing.js';
+export default async function handler(req,res){if(allowClient(req,res))return;if(req.method!=='POST')return res.status(405).end();try{const {db,stripe}=services(),user=await identity(req,db);const {data,error}=await db.from('momentum_subscriptions').select('stripe_customer').eq('user_id',user.id).single();if(error||!data.stripe_customer)throw Error();const session=await stripe.billingPortal.sessions.create({customer:data.stripe_customer,return_url:`${siteOrigin()}/settings`});return res.json({url:session.url})}catch{return res.status(503).json({error:'Billing management is unavailable. Please try again.'})}}

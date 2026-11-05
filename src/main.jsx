@@ -1,13 +1,24 @@
 import { StrictMode } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { registerSW } from 'virtual:pwa-register'
 import { createRoot } from 'react-dom/client'
+import '@fontsource/archivo/900.css'
+import '@fontsource-variable/fraunces'
+import '@fontsource-variable/outfit'
 import './index.css'
+import './glow.css'
 import App from './App.jsx'
+import { hasServiceConfiguration } from './supabaseClient'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { listenForStorePurchases } from './lib/billingClient'
+
+if (!Capacitor.isNativePlatform()) registerSW({ immediate: true });
+if (hasServiceConfiguration) listenForStorePurchases();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
+    {hasServiceConfiguration ? <AuthProvider>
       <App />
-    </AuthProvider>
+    </AuthProvider> : <main style={{padding:40}}><h1>Momentum 60</h1><p>This development build is not connected to its account service yet.</p><p>Your existing account and data have not been changed.</p></main>}
   </StrictMode>,
 )

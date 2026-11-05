@@ -1,116 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-const resendKey = process.env.RESEND_API_KEY;
-
-export default async function handler(request, response) {
-  // 1. Verify authorization (optional but good practice for cron)
-  const authHeader = request.headers.authorization;
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return response.status(401).json({ error: 'Unauthorized' });
+import {createClient} from '@supabase/supabase-js';
+import {Resend} from 'resend';
+import {localDate,seasonCalendar,pausedDates} from '../src/lib/seasonCalendar.js';
+export default async function handler(req,res){
+ if(!process.env.CRON_SECRET||req.headers.authorization!==`Bearer ${process.env.CRON_SECRET}`)return res.status(401).json({error:'Unauthorized'});
+ // Sending is deliberately disabled until the operator configures and tests delivery.
+ if(process.env.REMINDERS_ENABLED!=='true')return res.json({enabled:false,sent:0});
+ try{
+  if(!process.env.SUPABASE_SERVICE_ROLE_KEY||!process.env.RESEND_API_KEY)throw Error();
+  const db=createClient(process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}}),resend=new Resend(process.env.RESEND_API_KEY);
+  let sent=0;const now=new Date();
+  for(let offset=0;;offset+=200){
+   const {data:profiles,error}=await db.from('user_profiles').select('user_id,start_date,reminder_time,timezone,paused_since,paused_dates').eq('reminder_enabled',true).range(offset,offset+199);if(error)throw error;
+   for(const p of profiles){
+    if(!p.start_date||!p.timezone||!p.reminder_time||p.paused_since)continue;
+    let date,calendar,hour;try{date=localDate(now,p.timezone);calendar=seasonCalendar({startDate:localDate(new Date(p.start_date),p.timezone),today:date,pausedDates:pausedDates(p,date)});hour=new Intl.DateTimeFormat('en-GB',{timeZone:p.timezone,hour:'2-digit',hourCycle:'h23'}).format(now);}catch{continue;}
+    if(calendar.ended||calendar.day<1||hour!==p.reminder_time.slice(0,2))continue;
+    const {data:access,error:ae}=await db.from('momentum_subscriptions').select('legacy_access,status,paid_until,native_paid_until').eq('user_id',p.user_id).maybeSingle();if(ae)throw ae;
+    if(!access||!(access.legacy_access||Date.parse(access.native_paid_until)>now.getTime()||(['active','past_due'].includes(access.status)&&Date.parse(access.paid_until)>now.getTime())))continue;
+    const {data:progress,error:pe}=await db.from('user_progress').select('id').eq('user_id',p.user_id).eq('season_started_at',p.start_date).eq('day_number',calendar.day).limit(1);if(pe)throw pe;if(progress.length)continue;
+    const {data,error:ue}=await db.auth.admin.getUserById(p.user_id);if(ue)throw ue;if(!data.user?.email)continue;
+    const result=await resend.emails.send({from:'Momentum 60 <challenge@themomentumrule.com>',to:data.user.email,subject:'A small moment for you',html:'<p>Your practice is here when you are ready. Its smaller version counts too.</p><p><a href="https://challenge.themomentumrule.com/app">Open today</a></p><p><a href="https://challenge.themomentumrule.com/settings">Turn off reminders in Settings</a></p>'},{idempotencyKey:`momentum-reminder/${p.user_id}/${date}`});if(result.error)throw result.error;sent++;
+   }
+   if(profiles.length<200)break;
   }
-
-  if (!supabaseUrl || !supabaseKey || !resendKey) {
-    return response.status(500).json({ error: 'Missing environment variables' });
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  const resend = new Resend(resendKey);
-
-  try {
-    // 2. Fetch all users who have reminders enabled
-    const { data: profiles, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('user_id, start_date, reminder_time, timezone');
-
-    if (profileError) throw profileError;
-
-    const emailsToSend = [];
-    const nowUTC = new Date();
-
-    for (const profile of profiles) {
-      // Skip if no timezone or reminder time
-      if (!profile.timezone || !profile.reminder_time) continue;
-
-      // 3. Calculate local time for this user
-      const localTimeStr = new Intl.DateTimeFormat('en-US', {
-        timeZone: profile.timezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }).format(nowUTC); // e.g. "18:30"
-      
-      const localHour = localTimeStr.split(':')[0];
-      const targetHour = profile.reminder_time.split(':')[0];
-
-      // 4. If this is the hour they requested a reminder
-      if (localHour === targetHour) {
-        
-        // Check what day of the challenge they are on
-        const start = new Date(profile.start_date);
-        start.setHours(0,0,0,0);
-        const diffTime = Math.abs(nowUTC - start);
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const activeDay = Math.min(diffDays + 1, 60);
-
-        // Check if they have logged anything for activeDay
-        const { data: progress, error: progressError } = await supabase
-          .from('user_progress')
-          .select('id')
-          .eq('user_id', profile.user_id)
-          .eq('day_number', activeDay)
-          .limit(1);
-
-        if (!progressError && (!progress || progress.length === 0)) {
-          // 5. They haven't logged anything today! We need their email address.
-          // Since we can't easily get auth.users email from anon client without service_role key,
-          // we assume the Vercel API will use a service_role key or we fetch it securely.
-          // IMPORTANT: VITE_SUPABASE_ANON_KEY is used here. RLS on auth.users prevents this normally.
-          // We need to use service_role key to bypass RLS, OR we have an RPC.
-          
-          // As a workaround, we will use an RPC to get their email, OR we require SUPABASE_SERVICE_ROLE_KEY.
-          // Since we are building an MVP, let's assume we have an RPC `get_email_for_user(uuid)`.
-          
-          const { data: emailData } = await supabase.rpc('get_email_for_user', { target_user_id: profile.user_id });
-          
-          if (emailData) {
-            emailsToSend.push({
-              to: emailData,
-              subject: 'Your Momentum 60 Daily Reminder',
-              html: `<div style="font-family: sans-serif; text-align: center; color: #111827; padding: 2rem;">
-                <h1 style="color: #ec4899;">Keep the Chain Alive!</h1>
-                <p style="font-size: 1.2rem;">You haven't logged your Momentum 5 tasks today.</p>
-                <p>Don't let today be a zero day. Do one small thing.</p>
-                <a href="https://challenge.themomentumrule.com" style="display: inline-block; padding: 1rem 2rem; background: #ec4899; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 1rem;">Log My Progress</a>
-              </div>`
-            });
-          }
-        }
-      }
-    }
-
-    // 6. Send all emails via Resend (max 100 per batch)
-    if (emailsToSend.length > 0) {
-      for (const email of emailsToSend) {
-        await resend.emails.send({
-          from: 'Momentum 60 <challenge@themomentumrule.com>',
-          to: email.to,
-          subject: email.subject,
-          html: email.html
-        });
-      }
-    }
-
-    return response.status(200).json({ 
-      success: true, 
-      processed: profiles.length,
-      emailsSent: emailsToSend.length 
-    });
-    
-  } catch (error) {
-    console.error('Cron job error:', error);
-    return response.status(500).json({ error: 'Internal Server Error' });
-  }
+  return res.json({sent});
+ }catch{return res.status(503).json({error:'Reminder delivery could not be completed'});}
 }

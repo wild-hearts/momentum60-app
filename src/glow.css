@@ -1,0 +1,194 @@
+/* The Momentum 60 app shell: photographs, one gold accent, three tabs.
+   Everything is scoped under .gx so the older pages keep their own look. */
+.gx {
+  --gx-bg: #04141a;
+  --gx-card: #0c2b33;
+  --gx-ink: #f5f1ec;
+  --gx-dim: #c4bcb3;
+  --gx-gold: #f8ba71;
+  --gx-gold-ink: #04141a;
+  --gx-hair: rgba(245, 241, 236, 0.14);
+  font-family: 'Outfit Variable', 'Inter', sans-serif;
+  color: var(--gx-ink);
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(248, 186, 113, 0.06), transparent 60%),
+    var(--gx-bg);
+  min-height: 100dvh;
+  width: 100%;
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+}
+.gx *, .gx *::before, .gx *::after { box-sizing: border-box; }
+.gx a { color: var(--gx-gold); }
+.gx h1, .gx h2, .gx h3, .gx p { margin: 0; }
+
+.gx-wrap { max-width: 560px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ---- Photograph header ---- */
+.gx-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 46vh;
+  padding: calc(env(safe-area-inset-top) + 5.5rem) 0 2rem;
+  overflow: hidden;
+}
+.gx-hero > img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: -2;
+}
+.gx-hero::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(4, 20, 26, 0.45) 0%, rgba(4, 20, 26, 0.1) 35%, rgba(4, 20, 26, 0.55) 70%, #04141a 100%);
+}
+.gx-eyebrow {
+  font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 0.78rem;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--gx-gold);
+}
+.gx-title {
+  font-family: 'Archivo', sans-serif; font-weight: 900; letter-spacing: -0.02em;
+  font-size: clamp(2.2rem, 9vw, 3.3rem); line-height: 1.05; margin-top: 0.45rem;
+}
+.gx-lede { color: var(--gx-dim); font-size: 1.05rem; line-height: 1.55; margin-top: 0.8rem; max-width: 34rem; }
+.gx-account {
+  position: absolute; top: calc(env(safe-area-inset-top) + 0.9rem); right: 1rem; z-index: 5;
+  background: rgba(4, 20, 26, 0.72); color: var(--gx-ink); border: 1px solid var(--gx-hair);
+  border-radius: 999px; padding: 0.55rem 1.1rem; font: 600 0.78rem 'Outfit Variable', sans-serif;
+  letter-spacing: 0.14em; text-transform: uppercase; backdrop-filter: blur(8px); cursor: pointer;
+}
+
+/* ---- Content ---- */
+.gx-section { margin-top: 1.6rem; }
+.gx-rule { width: 3.5rem; height: 2px; background: var(--gx-gold); margin: 1.6rem 0 1.2rem; }
+.gx-serif { font-family: 'Fraunces Variable', Georgia, serif; }
+.gx-quote { font-family: 'Fraunces Variable', Georgia, serif; font-size: 1.55rem; line-height: 1.35; }
+.gx-card {
+  background: var(--gx-card); border: 1px solid var(--gx-hair); border-radius: 16px;
+  padding: 1.25rem; margin-top: 1.1rem;
+}
+.gx-card.warm { background: rgba(248, 186, 113, 0.08); border-color: rgba(248, 186, 113, 0.45); }
+.gx-card-label {
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gx-gold); display: flex; justify-content: space-between; gap: 1rem;
+}
+.gx-card-label span:last-child { color: var(--gx-dim); }
+.gx-card h2 { font-family: 'Fraunces Variable', Georgia, serif; font-weight: 500; font-size: 1.55rem; line-height: 1.3; margin-top: 0.7rem; }
+.gx-card p { color: var(--gx-dim); line-height: 1.6; margin-top: 0.6rem; }
+.gx-card p.strong { color: var(--gx-ink); }
+.gx-note { color: var(--gx-dim); font-size: 0.92rem; line-height: 1.55; }
+
+.gx-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 100%;
+  min-height: 52px; margin-top: 1.1rem; padding: 0.95rem 1.6rem; border: 0; border-radius: 999px;
+  background: var(--gx-gold); color: var(--gx-gold-ink); font: 600 1.02rem 'Outfit Variable', sans-serif;
+  cursor: pointer; text-decoration: none; transition: filter .15s, transform .1s;
+}
+.gx-btn:hover { filter: brightness(1.08); }
+.gx-btn:active { transform: scale(0.98); }
+.gx-btn:disabled { opacity: 0.55; cursor: default; }
+.gx-btn.quiet { background: transparent; color: var(--gx-ink); border: 1px solid var(--gx-hair); font-size: 0.92rem; min-height: 44px; }
+.gx-link { background: none; border: 0; color: var(--gx-gold); font: inherit; text-decoration: underline; cursor: pointer; padding: 0.4rem 0; }
+
+.gx-field { display: block; margin-top: 1.1rem; font-size: 0.92rem; color: var(--gx-dim); }
+.gx-field input, .gx-field textarea, .gx textarea.gx-textarea {
+  display: block; width: 100%; margin-top: 0.4rem; padding: 0.95rem 1.1rem; font: 1rem 'Outfit Variable', sans-serif;
+  color: var(--gx-ink); background: rgba(4, 20, 26, 0.7); border: 1px solid var(--gx-hair);
+  border-radius: 14px; outline: none;
+}
+.gx-field input:focus, .gx-field textarea:focus, .gx textarea.gx-textarea:focus { border-color: rgba(248, 186, 113, 0.75); }
+.gx-alert { color: #ffb4a8; margin-top: 1rem; }
+
+/* The song player sits in a card */
+.gx-card audio { width: 100%; margin-top: 0.8rem; }
+.gx-card .audio-player, .gx-card [class*='player'] { margin-top: 0.8rem; }
+
+/* ---- 60 Days map ---- */
+.gx-act { margin-top: 2.4rem; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.gx-act h2 { font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 1.9rem; letter-spacing: -0.02em; }
+.gx-act span { color: var(--gx-dim); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.gx-actsub { color: var(--gx-dim); margin-top: 0.2rem; }
+.gx-days { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-top: 1rem; }
+.gx-day {
+  display: flex; flex-direction: column; text-align: left; padding: 0; overflow: hidden; cursor: pointer;
+  background: var(--gx-card); border: 1px solid var(--gx-hair); border-radius: 18px; color: inherit; font: inherit;
+}
+.gx-day img { width: 100%; height: 110px; object-fit: cover; display: block; }
+.gx-day.locked img { filter: grayscale(0.8) brightness(0.45); }
+.gx-day-body { padding: 0.85rem 0.95rem 1.05rem; }
+.gx-day-top { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gx-gold); display: flex; gap: 0.6rem; }
+.gx-day-top span:last-child { color: var(--gx-dim); }
+.gx-day.today { border-color: var(--gx-gold); box-shadow: 0 0 0 1px var(--gx-gold) inset; }
+.gx-day-text {
+  font-family: 'Fraunces Variable', Georgia, serif; font-size: 1.02rem; line-height: 1.38; margin-top: 0.5rem;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gx-day.locked .gx-day-text { color: var(--gx-dim); }
+
+/* ---- Book ---- */
+.gx-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 1.1rem; }
+.gx-stat { background: var(--gx-card); border: 1px solid var(--gx-hair); border-radius: 16px; padding: 1rem 0.6rem; text-align: center; }
+.gx-stat b { display: block; font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 2rem; color: var(--gx-gold); }
+.gx-stat span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gx-dim); }
+.gx-ring { width: 100%; height: 10px; border-radius: 999px; background: rgba(245, 241, 236, 0.12); overflow: hidden; margin-top: 0.9rem; }
+.gx-ring i { display: block; height: 100%; background: var(--gx-gold); border-radius: 999px; }
+.gx-entry { border-top: 1px solid var(--gx-hair); padding: 0.9rem 0; }
+.gx-entry:first-of-type { border-top: 0; }
+.gx-entry b { font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gx-gold); }
+.gx-entry p { color: var(--gx-ink); white-space: pre-wrap; margin-top: 0.35rem; }
+
+/* ---- Tab bar ---- */
+.gx-tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: space-around; align-items: flex-end;
+  padding: 0.7rem 0.5rem max(1rem, calc(env(safe-area-inset-bottom) + 0.4rem));
+  border-top: 1px solid rgba(245, 241, 236, 0.08); background: rgba(4, 20, 26, 0.78); backdrop-filter: blur(14px);
+}
+.gx-tabs a {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-width: 76px; padding: 0.3rem 0.6rem;
+  color: var(--gx-dim); text-decoration: none; font: 500 0.78rem 'Outfit Variable', sans-serif;
+}
+.gx-tabs a.active { color: var(--gx-gold); }
+.gx-tabs svg { width: 22px; height: 22px; }
+
+/* ---- Account menu ---- */
+.gx-menu-back { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.55); display: flex; justify-content: flex-end; }
+.gx-menu {
+  width: min(86vw, 340px); height: 100%; overflow-y: auto; background: #07222a; border-left: 1px solid var(--gx-hair);
+  padding: calc(env(safe-area-inset-top) + 1.2rem) 1.4rem 2rem; display: flex; flex-direction: column; gap: 0.2rem;
+}
+.gx-menu a, .gx-menu button {
+  display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--gx-ink); text-decoration: none;
+  font: 500 1.02rem 'Outfit Variable', sans-serif; padding: 0.85rem 0; border-bottom: 1px solid var(--gx-hair); cursor: pointer;
+}
+.gx-menu .head { display: flex; justify-content: space-between; align-items: center; border: 0; padding-bottom: 0.4rem; }
+.gx-menu .head b { font: 900 1.1rem 'Archivo', sans-serif; letter-spacing: -0.02em; }
+.gx-menu .head button { width: auto; border: 0; font-size: 1.6rem; padding: 0 0.3rem; color: var(--gx-dim); }
+
+@media (min-width: 760px) {
+  .gx-days { grid-template-columns: repeat(3, 1fr); }
+  .gx-wrap { max-width: 640px; }
+}
+
+/* ---- Sign in ---- */
+.gx.gx-auth {
+  display: flex; align-items: center; justify-content: center; min-height: 100dvh;
+  padding: calc(env(safe-area-inset-top) + 2rem) 1.25rem calc(env(safe-area-inset-bottom) + 2rem);
+  background: linear-gradient(180deg, rgba(4, 20, 26, 0.55), rgba(4, 20, 26, 0.88)), url('/img/scenes/mountain-sunrise.jpg') center / cover no-repeat, #04141a;
+}
+.gx-auth-card {
+  width: 100%; max-width: 400px; padding: 2.2rem 1.6rem; border-radius: 24px;
+  background: rgba(4, 20, 26, 0.72); border: 1px solid rgba(245, 241, 236, 0.14); backdrop-filter: blur(14px);
+}
+.gx-auth-card a { color: #f8ba71; }
+
+/* Links styled as buttons keep the button's own text colour. */
+.gx a.gx-btn { color: var(--gx-gold-ink); }
+.gx a.gx-btn.quiet { color: var(--gx-ink); }
+
+/* ---- Need chips ---- */
+.gx-chip {
+  min-height: 40px; padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--gx-hair); background: transparent;
+  color: var(--gx-ink); font: 500 0.92rem 'Outfit Variable', sans-serif; cursor: pointer;
+}
+.gx-chip.on { background: var(--gx-gold); color: var(--gx-gold-ink); border-color: var(--gx-gold); }
+.gx-card p.gx-quote { color: var(--gx-ink); }

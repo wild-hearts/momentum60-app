@@ -48,7 +48,7 @@ function Tools() {
         </p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', width: '100%', maxWidth: '1000px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '2rem', width: '100%', maxWidth: '1000px' }}>
         {toolsList.map(tool => (
           <div 
             key={tool.id} 

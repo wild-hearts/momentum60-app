@@ -33,13 +33,13 @@ function Books() {
     <div className="landing-container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>The Momentum Series</h1>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 8vw, 3.5rem)', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>The Momentum Series</h1>
           <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
             Three books. One direction: forward. The foundational texts for the Momentum 60 challenge.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '3rem', textAlign: 'left' }}>
           {books.map((book) => (
             <div className="rule-card" key={book.slug}>
               <h3 style={{ fontSize: '1.5rem', color: '#E1A756', marginBottom: '0.5rem', fontWeight: '700' }}>{book.title}</h3>
